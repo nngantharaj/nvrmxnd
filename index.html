@@ -425,19 +425,19 @@
           </div>
           <button class="toggle on" id="toggle-reminders" onclick="toggleSetting(this,'reminders')"></button>
         </div>
-        <div class="settings-item">
+        <div class="settings-item" onclick="toggleDarkMode()">
           <div class="settings-item-left">
             <div class="settings-icon" style="background:rgba(106,247,200,.15)">🌙</div>
-            <div><div class="settings-label">Dark Mode</div><div class="settings-sub">Always on</div></div>
+            <div><div class="settings-label">Dark Mode</div><div class="settings-sub" id="dark-mode-sub">Currently: Dark</div></div>
           </div>
           <button class="toggle on" id="toggle-dark"></button>
         </div>
-        <div class="settings-item">
+        <div class="settings-item" onclick="openGoalModal()">
           <div class="settings-item-left">
             <div class="settings-icon" style="background:rgba(247,212,106,.15)">🎯</div>
-            <div><div class="settings-label">Daily Goal</div><div class="settings-sub" id="goal-sub">Complete all tasks</div></div>
+            <div><div class="settings-label">Daily Goal</div><div class="settings-sub" id="goal-sub">Tap to set your daily task goal</div></div>
           </div>
-          <span style="color:var(--muted);font-size:18px">›</span>
+          <span style="color:var(--accent4);font-size:18px">›</span>
         </div>
         <!-- BACKUP SECTION -->
         <div style="padding:4px 0 6px">
@@ -686,11 +686,11 @@
   </div>
 </div>
 
-<!-- Add Habit Modal -->
+<!-- Add/Edit Habit Modal -->
 <div class="modal-backdrop" id="habit-modal">
   <div class="modal">
     <div class="modal-handle"></div>
-    <h2>Add Habit</h2>
+    <h2 id="habit-modal-title">Add Habit</h2>
     <div class="form-group">
       <label>Emoji</label>
       <div class="emoji-picker" id="habit-emoji-picker">
@@ -733,6 +733,7 @@
       <button class="btn-ghost" onclick="closeModal('habit-modal')">Cancel</button>
       <button class="btn-primary" onclick="saveHabit()">Save Habit</button>
     </div>
+    <div style="margin-top:10px" id="delete-habit-wrap"></div>
   </div>
 </div>
 
@@ -805,6 +806,32 @@
     <div class="btn-row">
       <button class="btn-ghost" onclick="closeModal('budget-modal')">Cancel</button>
       <button class="btn-primary" onclick="saveBudget()">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- Daily Goal Modal -->
+<div class="modal-backdrop" id="goal-modal">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <h2>Set Daily Goal 🎯</h2>
+    <p style="font-size:13px;color:var(--muted);margin-bottom:16px">Set a motivational goal that appears on your Today screen.</p>
+    <div class="form-group">
+      <label>Your Goal</label>
+      <input type="text" id="goal-input" placeholder="e.g. Be productive and healthy today!" maxlength="60">
+    </div>
+    <div class="form-group">
+      <label>Minimum Tasks to Complete</label>
+      <select id="goal-tasks-input">
+        <option value="0">No minimum — just do your best</option>
+        <option value="3">At least 3 tasks</option>
+        <option value="5">At least 5 tasks</option>
+        <option value="all">All tasks</option>
+      </select>
+    </div>
+    <div class="btn-row">
+      <button class="btn-ghost" onclick="closeModal('goal-modal')">Cancel</button>
+      <button class="btn-primary" onclick="saveGoal()">Save Goal</button>
     </div>
   </div>
 </div>
@@ -907,6 +934,8 @@ function init() {
   loadSettings();
   updateStreak();
   updateLastBackupLabel();
+  applyDarkMode();
+  updateGoalSub();
   setInterval(updateTimerDisplay, 1000);
   // daily note autosave
   document.getElementById('daily-note').addEventListener('input', function() {
@@ -1183,7 +1212,7 @@ function renderHabits() {
 function buildHabitCard(habit) {
   const div = document.createElement('div');
   div.className = 'habit-card pop';
-  const t = today();
+  const t = new Date().toISOString().slice(0,10);
   const doneToday = habit.history.includes(t);
 
   // Week dots (last 7 days)
@@ -1201,7 +1230,10 @@ function buildHabitCard(habit) {
   div.innerHTML = `
     <div class="habit-top">
       <div class="habit-emoji">${habit.emoji}</div>
-      <div class="habit-streak">🔥${habit.streak}</div>
+      <div style="display:flex;align-items:center;gap:6px">
+        <div class="habit-streak">🔥${habit.streak}</div>
+        <button onclick="openEditHabit(${habit.id},event)" style="background:rgba(255,255,255,.07);border:none;border-radius:8px;padding:3px 7px;color:var(--muted);font-size:13px;cursor:pointer">✏️</button>
+      </div>
     </div>
     <div class="habit-name">${habit.name}</div>
     <div class="habit-freq">${habit.freq} · ${weekProgress}/7 this week</div>
@@ -1448,33 +1480,76 @@ function deleteTask(id) {
   }
 }
 
+let editingHabitId = null;
+
 function openHabitModal() {
+  editingHabitId = null;
   selectedHabitEmoji = '💧';
+  document.getElementById('habit-modal-title').textContent = 'Add Habit';
   document.getElementById('habit-name-input').value = '';
   document.getElementById('habit-freq-input').value = 'daily';
   document.getElementById('habit-color-input').value = '#7c6af7';
+  document.getElementById('delete-habit-wrap').innerHTML = '';
   document.querySelectorAll('#habit-emoji-picker .emoji-opt').forEach(e => e.classList.toggle('selected', e.textContent === selectedHabitEmoji));
   openModal('habit-modal');
+}
+
+function openEditHabit(id, e) {
+  e && e.stopPropagation();
+  const habit = state.habits.find(h => h.id === id);
+  if (!habit) return;
+  editingHabitId = id;
+  selectedHabitEmoji = habit.emoji;
+  document.getElementById('habit-modal-title').textContent = 'Edit Habit';
+  document.getElementById('habit-name-input').value = habit.name;
+  document.getElementById('habit-freq-input').value = habit.freq;
+  document.getElementById('habit-color-input').value = habit.color;
+  document.querySelectorAll('#habit-emoji-picker .emoji-opt').forEach(e => e.classList.toggle('selected', e.textContent === selectedHabitEmoji));
+  document.getElementById('delete-habit-wrap').innerHTML = `<button class="btn-danger" style="width:100%" onclick="deleteHabit(${id})">🗑 Delete Habit</button>`;
+  openModal('habit-modal');
+}
+
+function deleteHabit(id) {
+  if (confirm('Delete this habit? All its history will be lost.')) {
+    state.habits = state.habits.filter(h => h.id !== id);
+    saveState();
+    closeModal('habit-modal');
+    renderHabits();
+    renderMedals();
+    toast('🗑 Habit deleted');
+  }
 }
 
 function saveHabit() {
   const name = document.getElementById('habit-name-input').value.trim();
   if (!name) { toast('⚠️ Please enter a habit name'); return; }
-  state.habits.push({
-    id: state.nextHabitId++,
-    emoji: selectedHabitEmoji,
-    name,
-    freq: document.getElementById('habit-freq-input').value,
-    color: document.getElementById('habit-color-input').value,
-    streak: 0,
-    longestStreak: 0,
-    history: [],
-  });
+
+  if (editingHabitId) {
+    const habit = state.habits.find(h => h.id === editingHabitId);
+    if (habit) {
+      habit.emoji = selectedHabitEmoji;
+      habit.name = name;
+      habit.freq = document.getElementById('habit-freq-input').value;
+      habit.color = document.getElementById('habit-color-input').value;
+      toast('✏️ Habit updated!');
+    }
+  } else {
+    state.habits.push({
+      id: state.nextHabitId++,
+      emoji: selectedHabitEmoji,
+      name,
+      freq: document.getElementById('habit-freq-input').value,
+      color: document.getElementById('habit-color-input').value,
+      streak: 0,
+      longestStreak: 0,
+      history: [],
+    });
+    toast('🌱 Habit added!');
+  }
   saveState();
   closeModal('habit-modal');
   renderHabits();
   renderMedals();
-  toast('🌱 Habit added!');
 }
 
 function openModal(id) {
@@ -1939,6 +2014,79 @@ function updateLastBackupLabel() {
   if (!el) return;
   const last = localStorage.getItem('dayflow_last_backup');
   el.textContent = last ? `Last backed up: ${last}` : 'Never — export to create one';
+}
+
+// ═══════════════════════════════════════════════
+//  DARK MODE
+// ═══════════════════════════════════════════════
+function toggleDarkMode() {
+  const isDark = document.documentElement.style.getPropertyValue('--bg') !== '#f5f5f7';
+  if (isDark) {
+    // Switch to light
+    document.documentElement.style.setProperty('--bg', '#f5f5f7');
+    document.documentElement.style.setProperty('--surface', '#ffffff');
+    document.documentElement.style.setProperty('--surface2', '#efefef');
+    document.documentElement.style.setProperty('--border', '#e0e0e8');
+    document.documentElement.style.setProperty('--text', '#1a1a2e');
+    document.documentElement.style.setProperty('--muted', '#888899');
+    document.getElementById('toggle-dark').classList.remove('on');
+    document.getElementById('dark-mode-sub').textContent = 'Currently: Light';
+    state.settings.darkMode = false;
+  } else {
+    // Switch to dark
+    document.documentElement.style.setProperty('--bg', '#0e0f14');
+    document.documentElement.style.setProperty('--surface', '#16181f');
+    document.documentElement.style.setProperty('--surface2', '#1e2029');
+    document.documentElement.style.setProperty('--border', '#2a2d38');
+    document.documentElement.style.setProperty('--text', '#f0f0f5');
+    document.documentElement.style.setProperty('--muted', '#8888a0');
+    document.getElementById('toggle-dark').classList.add('on');
+    document.getElementById('dark-mode-sub').textContent = 'Currently: Dark';
+    state.settings.darkMode = true;
+  }
+  saveState();
+}
+
+function applyDarkMode() {
+  if (state.settings && state.settings.darkMode === false) {
+    document.documentElement.style.setProperty('--bg', '#f5f5f7');
+    document.documentElement.style.setProperty('--surface', '#ffffff');
+    document.documentElement.style.setProperty('--surface2', '#efefef');
+    document.documentElement.style.setProperty('--border', '#e0e0e8');
+    document.documentElement.style.setProperty('--text', '#1a1a2e');
+    document.documentElement.style.setProperty('--muted', '#888899');
+    const btn = document.getElementById('toggle-dark');
+    if (btn) btn.classList.remove('on');
+    const sub = document.getElementById('dark-mode-sub');
+    if (sub) sub.textContent = 'Currently: Light';
+  }
+}
+
+// ═══════════════════════════════════════════════
+//  DAILY GOAL MODAL
+// ═══════════════════════════════════════════════
+function openGoalModal() {
+  document.getElementById('goal-input').value = state.settings.goalText || '';
+  document.getElementById('goal-tasks-input').value = state.settings.goalTasks || '0';
+  openModal('goal-modal');
+}
+
+function saveGoal() {
+  const text = document.getElementById('goal-input').value.trim();
+  const tasks = document.getElementById('goal-tasks-input').value;
+  state.settings.goalText = text || 'Complete all tasks';
+  state.settings.goalTasks = tasks;
+  saveState();
+  updateGoalSub();
+  closeModal('goal-modal');
+  toast('🎯 Daily goal saved!');
+}
+
+function updateGoalSub() {
+  const el = document.getElementById('goal-sub');
+  if (!el) return;
+  const text = state.settings && state.settings.goalText;
+  el.textContent = text || 'Tap to set your daily goal';
 }
 
 // ═══════════════════════════════════════════════
