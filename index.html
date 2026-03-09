@@ -107,17 +107,17 @@
   .fab:active { transform: scale(.9); }
 
   /* ── Modal ── */
-  .modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,.7); z-index: 100; display: none; align-items: flex-end; backdrop-filter: blur(4px); }
+  .modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,.7); z-index: 100; display: none; align-items: flex-end; backdrop-filter: blur(4px); touch-action: none; overscroll-behavior: none; }
   .modal-backdrop.open { display: flex; }
-  .modal { background: var(--surface); border-radius: 24px 24px 0 0; width: 100%; padding: 20px 20px max(20px, env(safe-area-inset-bottom)); max-height: 85dvh; overflow-y: auto; }
+  .modal { background: var(--surface); border-radius: 24px 24px 0 0; width: 100%; padding: 20px 20px max(20px, env(safe-area-inset-bottom)); max-height: 92dvh; overflow-y: auto; overflow-x: hidden; -webkit-overflow-scrolling: touch; overscroll-behavior: contain; touch-action: pan-y; position: relative; }
   .modal-handle { width: 36px; height: 4px; background: var(--border); border-radius: 2px; margin: 0 auto 16px; }
   .modal h2 { font-family: 'Syne', sans-serif; font-size: 20px; font-weight: 800; margin-bottom: 16px; }
   .form-group { margin-bottom: 14px; }
   .form-group label { display: block; font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; }
-  .form-group input, .form-group select, .form-group textarea { width: 100%; background: var(--surface2); border: 1px solid var(--border); border-radius: 12px; padding: 12px 14px; color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 14px; outline: none; transition: border-color .2s; }
+  .form-group input, .form-group select, .form-group textarea { width: 100%; background: var(--surface2); border: 1px solid var(--border); border-radius: 12px; padding: 12px 14px; color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 16px; outline: none; transition: border-color .2s; -webkit-appearance: none; appearance: none; box-sizing: border-box; }
   .form-group input:focus, .form-group select:focus { border-color: var(--accent); }
   .form-group select option { background: var(--surface); }
-  .form-group textarea { resize: none; height: 70px; }
+  .form-group textarea { resize: none; height: 70px; font-size: 16px; }
 
   .emoji-picker { display: flex; flex-wrap: wrap; gap: 8px; }
   .emoji-opt { background: var(--surface2); border: 2px solid transparent; border-radius: 10px; padding: 6px 10px; font-size: 20px; cursor: pointer; transition: all .15s; }
@@ -1554,9 +1554,21 @@ function saveHabit() {
 
 function openModal(id) {
   document.getElementById(id).classList.add('open');
+  // Lock page scroll on iOS — prevents background dragging
+  document.body.style.overflow = 'hidden';
+  document.body.style.position = 'fixed';
+  document.body.style.top = `-${window.scrollY}px`;
+  document.body.style.width = '100%';
 }
 function closeModal(id) {
   document.getElementById(id).classList.remove('open');
+  // Restore page scroll
+  const scrollY = document.body.style.top;
+  document.body.style.overflow = '';
+  document.body.style.position = '';
+  document.body.style.top = '';
+  document.body.style.width = '';
+  window.scrollTo(0, parseInt(scrollY || '0') * -1);
 }
 
 function selectEmoji(el) {
@@ -1570,11 +1582,22 @@ function selectHabitEmoji(el) {
   selectedHabitEmoji = el.textContent;
 }
 
-// Close modal on backdrop click
+// Close modal on backdrop click — prevent background movement
 document.querySelectorAll('.modal-backdrop').forEach(b => {
   b.addEventListener('click', function(e) {
-    if (e.target === this) this.classList.remove('open');
+    if (e.target === this) closeModal(this.id);
   });
+  // Block ALL touch movement on backdrop — only allow scroll inside .modal
+  b.addEventListener('touchmove', function(e) {
+    if (!e.target.closest('.modal')) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+  }, { passive: false });
+  // Block touchstart on backdrop itself
+  b.addEventListener('touchstart', function(e) {
+    if (e.target === this) e.preventDefault();
+  }, { passive: false });
 });
 
 // ═══════════════════════════════════════════════
