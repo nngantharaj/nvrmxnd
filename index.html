@@ -764,7 +764,7 @@
       <button class="type-btn" id="type-income-btn" onclick="setTxnType('income')">💰 Income</button>
     </div>
     <div class="form-group">
-      <label>Amount ($)</label>
+      <label>Amount (<span id="txn-amount-currency-sym">$</span>)</label>
       <input type="number" id="txn-amount-input" placeholder="0.00" min="0.01" step="0.01" inputmode="decimal">
     </div>
     <div class="form-group">
@@ -805,7 +805,7 @@
     <div class="modal-handle"></div>
     <h2>Set Monthly Budget</h2>
     <div class="form-group">
-      <label>Budget Amount ($)</label>
+      <label>Budget Amount (<span id="budget-amount-currency-sym">$</span>)</label>
       <input type="number" id="budget-amount-input" placeholder="e.g. 2000" min="1" inputmode="decimal">
     </div>
     <div class="form-group">
@@ -2340,11 +2340,18 @@ function selectCurrency(code) {
 }
 
 function updateCurrencySub() {
-  const el = document.getElementById('currency-sub');
-  if (!el) return;
   const code = (state.settings && state.settings.currency) || 'USD';
   const c = CURRENCIES.find(c => c.code === code);
-  el.textContent = c ? `${c.name} (${c.sym})` : code;
+  const sym = c ? c.sym : code;
+
+  const el = document.getElementById('currency-sub');
+  if (el) el.textContent = c ? `${c.name} (${sym})` : code;
+
+  // Sync all currency symbol labels across the app
+  ['balance-currency-sym', 'txn-amount-currency-sym', 'budget-amount-currency-sym'].forEach(id => {
+    const node = document.getElementById(id);
+    if (node) node.textContent = sym;
+  });
 }
 
 // ═══════════════════════════════════════════════
