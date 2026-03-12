@@ -553,8 +553,8 @@
       </div>
 
       <!-- Spending by category donut -->
-      <div class="donut-card">
-        <h3>Spending by Category</h3>
+      <div class="donut-card" onclick="toggleDonutMode()">
+        <h3>Spending by Category <span id="donut-mode-hint" style="font-size:10px;color:var(--accent);text-transform:none;letter-spacing:0;margin-left:4px">tap to see amounts</span></h3>
         <div class="donut-wrap">
           <div class="donut-svg-wrap">
             <svg width="110" height="110" viewBox="0 0 110 110" id="donut-svg">
@@ -863,6 +863,22 @@
     <div class="btn-row" style="margin-top:16px">
       <button class="btn-ghost" onclick="closeModal('currency-modal')">Cancel</button>
     </div>
+  </div>
+</div>
+
+<!-- Day Detail Modal -->
+<div class="modal-backdrop" id="day-detail-modal">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+      <div>
+        <h2 id="day-detail-title" style="font-size:18px">Day Spending</h2>
+        <div id="day-detail-total" style="font-size:13px;color:var(--muted);margin-top:2px"></div>
+      </div>
+      <button onclick="closeModal('day-detail-modal')" style="background:var(--surface2);border:none;color:var(--muted);width:32px;height:32px;border-radius:50%;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center">×</button>
+    </div>
+    <div id="day-detail-cats" style="display:flex;flex-direction:column;gap:8px;margin-bottom:16px"></div>
+    <div id="day-detail-txns" style="display:flex;flex-direction:column;gap:6px;max-height:220px;overflow-y:auto"></div>
   </div>
 </div>
 
@@ -1840,17 +1856,27 @@ function renderMoney() {
   renderTxnList();
 }
 
+let donutShowAmount = false;
+
+function toggleDonutMode() {
+  donutShowAmount = !donutShowAmount;
+  const hint = document.getElementById('donut-mode-hint');
+  if (hint) hint.textContent = donutShowAmount ? 'tap to see %' : 'tap to see amounts';
+  // Re-render legend in-place with current data
+  const txns = getTxnsForMonth(moneyViewMonth, moneyViewYear);
+  renderDonut(txns);
+}
+
 function renderDonut(txns) {
   const expenses = txns.filter(t => t.type === 'expense');
   const total = expenses.reduce((s,t) => s + t.amount, 0);
-  document.getElementById('donut-center-val').textContent = total > 0 ? getCurrencySymbol() + total.toFixed(0) : getCurrencySymbol() + '0';
+  document.getElementById('donut-center-val').textContent = getCurrencySymbol() + (total > 0 ? total.toFixed(0) : '0');
 
   const byCat = {};
   expenses.forEach(t => { byCat[t.cat] = (byCat[t.cat] || 0) + t.amount; });
-  const cats = Object.entries(byCat).sort((a,b) => b[1]-a[1]).slice(0,5);
+  const cats = Object.entries(byCat).sort((a,b) => b[1]-a[1]); // ALL categories, no slice
 
   const svg = document.getElementById('donut-svg');
-  // keep background circle, remove old arcs
   while (svg.children.length > 1) svg.removeChild(svg.lastChild);
 
   const R = 42, CX = 55, CY = 55;
@@ -1876,12 +1902,16 @@ function renderDonut(txns) {
 
   const legend = document.getElementById('donut-legend');
   legend.innerHTML = cats.length
-    ? cats.map(([cat,val]) => `
-        <div class="donut-legend-item">
+    ? cats.map(([cat,val]) => {
+        const displayVal = donutShowAmount
+          ? `<span class="donut-legend-pct" style="color:var(--text)">${fmt(val)}</span>`
+          : `<span class="donut-legend-pct">${total>0?Math.round(val/total*100):0}%</span>`;
+        return `<div class="donut-legend-item">
           <div class="donut-dot" style="background:${CAT_META[cat]?.color||'#888'}"></div>
           <span class="donut-legend-name">${CAT_META[cat]?.label||cat}</span>
-          <span class="donut-legend-pct">${total>0?Math.round(val/total*100):0}%</span>
-        </div>`).join('')
+          ${displayVal}
+        </div>`;
+      }).join('')
     : '<div style="color:var(--muted);font-size:12px">No expenses yet</div>';
 }
 
@@ -1914,7 +1944,7 @@ function renderTrendBars() {
     const h = Math.max(4, Math.round(d.amt / max * 56));
     const color = isToday ? 'var(--accent2)' : 'var(--accent)';
     const opacity = isFuture ? 0.2 : (isToday ? 1 : 0.6);
-    bars.innerHTML += `<div class="trend-bar-wrap" title="${d.dateStr}: ${fmt(d.amt)}">
+    bars.innerHTML += `<div class="trend-bar-wrap" onclick="showDayDetail('${d.dateStr}')">
       <div class="trend-bar" style="height:${h}px;background:${color};opacity:${opacity}"></div>
       <div class="trend-day" style="${isToday?'color:var(--accent2);font-weight:700':''}">${String(d.date).padStart(2,'0')}</div>
     </div>`;
@@ -2315,6 +2345,75 @@ function updateCurrencySub() {
   const code = (state.settings && state.settings.currency) || 'USD';
   const c = CURRENCIES.find(c => c.code === code);
   el.textContent = c ? `${c.name} (${c.sym})` : code;
+}
+
+// ═══════════════════════════════════════════════
+//  DAY DETAIL
+// ═══════════════════════════════════════════════
+function showDayDetail(dateStr) {
+  const txns = (state.transactions || []).filter(t => t.date === dateStr);
+  const expenses = txns.filter(t => t.type === 'expense');
+  const income   = txns.filter(t => t.type === 'income');
+  const totalExp = expenses.reduce((s,t) => s + t.amount, 0);
+  const totalInc = income.reduce((s,t)   => s + t.amount, 0);
+
+  // Format title date nicely e.g. "Mon, 13 Mar"
+  const d = new Date(dateStr + 'T00:00:00');
+  const days = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const label = `${days[d.getDay()]}, ${d.getDate()} ${months[d.getMonth()]}`;
+
+  document.getElementById('day-detail-title').textContent = label;
+
+  // Summary line
+  let summary = `Total spent: ${fmt(totalExp)}`;
+  if (totalInc > 0) summary += `  ·  Income: ${fmt(totalInc)}`;
+  if (txns.length === 0) summary = 'No transactions on this day';
+  document.getElementById('day-detail-total').textContent = summary;
+
+  // Category breakdown
+  const catEl = document.getElementById('day-detail-cats');
+  if (expenses.length > 0) {
+    const byCat = {};
+    expenses.forEach(t => { byCat[t.cat] = (byCat[t.cat] || 0) + t.amount; });
+    const cats = Object.entries(byCat).sort((a,b) => b[1]-a[1]);
+    catEl.innerHTML = cats.map(([cat, val]) => {
+      const pct = totalExp > 0 ? Math.round(val / totalExp * 100) : 0;
+      return `<div style="display:flex;align-items:center;gap:8px">
+        <div style="width:8px;height:8px;border-radius:2px;background:${CAT_META[cat]?.color||'#888'};flex-shrink:0"></div>
+        <span style="font-size:13px;flex:1">${CAT_META[cat]?.label||cat}</span>
+        <span style="font-size:12px;color:var(--muted)">${pct}%</span>
+        <span style="font-size:13px;font-weight:600">${fmt(val)}</span>
+      </div>
+      <div style="height:4px;background:var(--border);border-radius:2px;margin-bottom:2px">
+        <div style="height:100%;width:${pct}%;background:${CAT_META[cat]?.color||'#888'};border-radius:2px;transition:width .3s"></div>
+      </div>`;
+    }).join('');
+  } else {
+    catEl.innerHTML = '';
+  }
+
+  // Individual transactions
+  const txnEl = document.getElementById('day-detail-txns');
+  if (txns.length > 0) {
+    const sorted = [...txns].sort((a,b) => (b.type==='income'?-1:1) - (a.type==='income'?-1:1));
+    txnEl.innerHTML = `<div style="font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:4px">Transactions</div>` +
+      sorted.map(t => `
+        <div style="display:flex;align-items:center;gap:10px;padding:8px 10px;background:var(--surface2);border-radius:10px">
+          <div style="font-size:18px">${CAT_META[t.cat]?.icon||'💰'}</div>
+          <div style="flex:1;min-width:0">
+            <div style="font-size:13px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${t.desc||'—'}</div>
+            <div style="font-size:11px;color:var(--muted)">${CAT_META[t.cat]?.label||t.cat}</div>
+          </div>
+          <div style="font-size:14px;font-weight:700;color:${t.type==='income'?'var(--accent3)':'var(--danger)'}">
+            ${t.type==='income'?'+':'-'}${fmt(t.amount)}
+          </div>
+        </div>`).join('');
+  } else {
+    txnEl.innerHTML = `<div style="text-align:center;padding:16px;color:var(--muted);font-size:13px">No transactions on this day</div>`;
+  }
+
+  openModal('day-detail-modal');
 }
 
 // ═══════════════════════════════════════════════
