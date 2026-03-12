@@ -2248,47 +2248,9 @@ function updateGoalSub() {
 //  CURRENCY
 // ═══════════════════════════════════════════════
 const CURRENCIES = [
-  { code:'USD', name:'US Dollar',           sym:'$'    },
-  { code:'EUR', name:'Euro',                sym:'€'    },
-  { code:'GBP', name:'British Pound',       sym:'£'    },
-  { code:'INR', name:'Indian Rupee',        sym:'₹'    },
-  { code:'JPY', name:'Japanese Yen',        sym:'¥'    },
-  { code:'CAD', name:'Canadian Dollar',     sym:'CA$'  },
-  { code:'AUD', name:'Australian Dollar',   sym:'A$'   },
-  { code:'CHF', name:'Swiss Franc',         sym:'CHF'  },
-  { code:'CNY', name:'Chinese Yuan',        sym:'¥'    },
-  { code:'KRW', name:'South Korean Won',    sym:'₩'    },
-  { code:'BRL', name:'Brazilian Real',      sym:'R$'   },
-  { code:'MXN', name:'Mexican Peso',        sym:'MX$'  },
-  { code:'SGD', name:'Singapore Dollar',    sym:'S$'   },
-  { code:'AED', name:'UAE Dirham',          sym:'د.إ'  },
-  { code:'SAR', name:'Saudi Riyal',         sym:'﷼'    },
-  { code:'THB', name:'Thai Baht',           sym:'฿'    },
-  { code:'IDR', name:'Indonesian Rupiah',   sym:'Rp'   },
-  { code:'PHP', name:'Philippine Peso',     sym:'₱'    },
-  { code:'MYR', name:'Malaysian Ringgit',   sym:'RM'   },
-  { code:'HKD', name:'Hong Kong Dollar',    sym:'HK$'  },
-  { code:'TRY', name:'Turkish Lira',        sym:'₺'    },
-  { code:'ZAR', name:'South African Rand',  sym:'R'    },
-  { code:'NGN', name:'Nigerian Naira',      sym:'₦'    },
-  { code:'PKR', name:'Pakistani Rupee',     sym:'₨'    },
-  { code:'BDT', name:'Bangladeshi Taka',    sym:'৳'    },
-  { code:'VND', name:'Vietnamese Dong',     sym:'₫'    },
-  { code:'EGP', name:'Egyptian Pound',      sym:'£'    },
-  { code:'NZD', name:'New Zealand Dollar',  sym:'NZ$'  },
-  { code:'TWD', name:'Taiwan Dollar',       sym:'NT$'  },
-  { code:'QAR', name:'Qatari Riyal',        sym:'﷼'    },
-  { code:'KWD', name:'Kuwaiti Dinar',       sym:'KD'   },
-  { code:'LKR', name:'Sri Lankan Rupee',    sym:'₨'    },
-  { code:'RUB', name:'Russian Ruble',       sym:'₽'    },
-  { code:'DKK', name:'Danish Krone',        sym:'kr'   },
-  { code:'NOK', name:'Norwegian Krone',     sym:'kr'   },
-  { code:'SEK', name:'Swedish Krona',       sym:'kr'   },
-  { code:'PLN', name:'Polish Zloty',        sym:'zł'   },
-  { code:'ILS', name:'Israeli Shekel',      sym:'₪'    },
-  { code:'KES', name:'Kenyan Shilling',     sym:'Ksh'  },
-  { code:'GHS', name:'Ghanaian Cedi',       sym:'GH₵'  },
-  { code:'MAD', name:'Moroccan Dirham',     sym:'MAD'  },
+  { code:'USD', name:'US Dollar',   sym:'$' },
+  { code:'INR', name:'Indian Rupee', sym:'₹' },
+  { code:'EUR', name:'Euro',         sym:'€' },
 ];
 
 function openCurrencyModal() {
@@ -2354,7 +2316,7 @@ function updateReminderSub() {
     el.textContent = '⚠️ Blocked — enable in iPhone Settings → Safari';
   } else if (perm === 'granted' && enabled) {
     const count = getTasksForToday().filter(t => t.time && !t.done).length;
-    el.textContent = `✅ Active · ${count} reminder${count !== 1 ? 's' : ''} set for today`;
+    el.textContent = `✅ On · notifying for ${count} task${count !== 1 ? 's' : ''} today`;
   } else {
     el.textContent = 'Tap to enable task notifications';
   }
@@ -2374,6 +2336,7 @@ function handleReminderToggle() {
     state.settings = state.settings || {};
     state.settings.reminders = false;
     saveState();
+    stopNotifications();
     updateReminderToggle();
     updateReminderSub();
     toast('🔕 Reminders disabled');
@@ -2420,54 +2383,87 @@ function handleReminderToggle() {
   }
 }
 
+// ═══════════════════════════════════════════════
+//  NOTIFICATIONS — POLLING BASED (reliable on iOS Safari)
+// ═══════════════════════════════════════════════
+// iOS Safari kills background setTimeout timers aggressively.
+// Instead we poll every 60 seconds and fire if a task is due within
+// this minute window. We also track which notifications already fired
+// today so we don't double-notify.
+
+let notifPollInterval = null;
+
 function scheduleAllNotifications() {
+  // Clear any existing poll
+  if (notifPollInterval) clearInterval(notifPollInterval);
   if (!('Notification' in window) || Notification.permission !== 'granted') return;
   if (!(state.settings && state.settings.reminders)) return;
 
+  // Run immediately then every 60 seconds
+  checkAndFireNotifications();
+  notifPollInterval = setInterval(checkAndFireNotifications, 60000);
+  console.log('DayFlow: notification polling started');
+}
+
+function stopNotifications() {
+  if (notifPollInterval) {
+    clearInterval(notifPollInterval);
+    notifPollInterval = null;
+  }
+}
+
+function checkAndFireNotifications() {
+  if (!('Notification' in window) || Notification.permission !== 'granted') return;
+  if (!(state.settings && state.settings.reminders)) return;
+
+  const now = new Date();
+  const nowH = now.getHours();
+  const nowM = now.getMinutes();
+  const todayKey = now.toISOString().slice(0, 10);
+
+  // Track fired notifications per day in memory (not state, resets on reload which is fine)
+  if (!window._notifFired) window._notifFired = {};
+  if (!window._notifFired[todayKey]) window._notifFired[todayKey] = {};
+
   const tasks = getTasksForToday().filter(t => t.time && !t.done);
-  let scheduled = 0;
 
   tasks.forEach(task => {
-    const [h, m] = task.time.split(':').map(Number);
-    const now = new Date();
-    const fireAt = new Date();
-    fireAt.setHours(h, m, 0, 0);
-    const diff = fireAt - now;
+    const [taskH, taskM] = task.time.split(':').map(Number);
 
-    // Only schedule if in the future (within next 24h)
-    if (diff > 0 && diff < 86400000) {
-      scheduled++;
-      setTimeout(() => {
-        // Only fire if task still not done
-        const t = state.tasks.find(t => t.id === task.id);
-        if (t && !t.done) {
-          new Notification(`⏰ ${task.name}`, {
-            body: `${formatTime(task.time)} · ${task.duration} min · ${task.cat}`,
-            tag: `task-reminder-${task.id}`,
-            requireInteraction: false,
-          });
-        }
-      }, diff);
+    // Check exact match: fire if current time matches task time (within same minute)
+    const isOnTime = (nowH === taskH && nowM === taskM);
+
+    // 5-min early warning
+    const earlyDate = new Date();
+    earlyDate.setHours(taskH, taskM, 0, 0);
+    const minsUntil = Math.round((earlyDate - now) / 60000);
+    const isEarly = (minsUntil === 5);
+
+    const onTimeKey  = `on-${task.id}-${todayKey}-${taskH}-${taskM}`;
+    const earlyKey   = `early-${task.id}-${todayKey}-${taskH}-${taskM}`;
+
+    // Fire on-time notification
+    if (isOnTime && !window._notifFired[todayKey][onTimeKey]) {
+      window._notifFired[todayKey][onTimeKey] = true;
+      try {
+        new Notification(`⏰ Time for: ${task.name}`, {
+          body: `${formatTime(task.time)} · ${task.duration} min · ${task.cat}`,
+          tag: onTimeKey,
+        });
+      } catch(e) { console.warn('Notification error:', e); }
     }
 
-    // Also schedule a 5-min early warning
-    const earlyDiff = diff - (5 * 60 * 1000);
-    if (earlyDiff > 0 && earlyDiff < 86400000) {
-      setTimeout(() => {
-        const t = state.tasks.find(t => t.id === task.id);
-        if (t && !t.done) {
-          new Notification(`⏳ Coming up in 5 min: ${task.name}`, {
-            body: `Starts at ${formatTime(task.time)}`,
-            tag: `task-early-${task.id}`,
-          });
-        }
-      }, earlyDiff);
+    // Fire 5-min early warning
+    if (isEarly && !window._notifFired[todayKey][earlyKey]) {
+      window._notifFired[todayKey][earlyKey] = true;
+      try {
+        new Notification(`⏳ Up next in 5 min: ${task.name}`, {
+          body: `Starts at ${formatTime(task.time)}`,
+          tag: earlyKey,
+        });
+      } catch(e) { console.warn('Notification error:', e); }
     }
   });
-
-  if (scheduled > 0) {
-    console.log(`DayFlow: ${scheduled} task notifications scheduled`);
-  }
 }
 
 // Re-schedule notifications on app init if reminders are on
