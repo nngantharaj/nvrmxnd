@@ -296,8 +296,10 @@
   /* Mini bar chart for spending trend */
   .trend-card { margin: 12px 20px 0; background: var(--surface); border: 1px solid var(--border); border-radius: 18px; padding: 16px; }
   .trend-card h3 { font-size: 12px; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); margin-bottom: 12px; }
-  .trend-bars { display: flex; align-items: flex-end; gap: 6px; height: 60px; }
-  .trend-bar-wrap { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px; }
+  .trend-bars-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
+  .trend-bars-scroll::-webkit-scrollbar { display: none; }
+  .trend-bars { display: flex; align-items: flex-end; gap: 6px; height: 60px; width: max-content; min-width: 100%; }
+  .trend-bar-wrap { width: 32px; flex-shrink: 0; display: flex; flex-direction: column; align-items: center; gap: 3px; }
   .trend-bar { width: 100%; border-radius: 4px 4px 0 0; min-height: 4px; transition: height .4s ease; }
   .trend-day { font-size: 9px; color: var(--muted); }
 
@@ -418,15 +420,15 @@
         <p>Personalize your experience</p>
       </div>
       <div class="settings-list">
-        <div class="settings-item" onclick="handleReminderToggle()">
+        <div class="settings-item">
           <div class="settings-item-left">
             <div class="settings-icon" style="background:rgba(124,106,247,.15)">🔔</div>
             <div>
               <div class="settings-label">Reminders</div>
-              <div class="settings-sub" id="reminder-sub">Tap to enable task notifications</div>
+              <div class="settings-sub">Coming soon</div>
             </div>
           </div>
-          <button class="toggle" id="toggle-reminders"></button>
+          <button class="toggle" id="toggle-reminders" onclick="toggleSetting(this,'reminders')"></button>
         </div>
         <div class="settings-item" onclick="toggleDarkMode()">
           <div class="settings-item-left">
@@ -567,10 +569,12 @@
         </div>
       </div>
 
-      <!-- 7-day spending trend -->
+      <!-- Monthly spending trend -->
       <div class="trend-card">
-        <h3>7-Day Spending</h3>
-        <div class="trend-bars" id="trend-bars"></div>
+        <h3 id="trend-card-title">Monthly Spending</h3>
+        <div class="trend-bars-scroll" id="trend-bars-scroll">
+          <div class="trend-bars" id="trend-bars"></div>
+        </div>
       </div>
 
       <!-- Savings goals -->
@@ -963,7 +967,6 @@ function init() {
   applyDarkMode();
   updateGoalSub();
   updateCurrencySub();
-  initNotifications();
   setInterval(updateTimerDisplay, 1000);
   // daily note autosave
   document.getElementById('daily-note').addEventListener('input', function() {
@@ -1408,13 +1411,7 @@ function renderStats() {
 //  SETTINGS
 // ═══════════════════════════════════════════════
 function loadSettings() {
-  const s = state.settings || {};
-  // Restore dark mode
   applyDarkMode();
-  // Sync reminder toggle with actual browser permission
-  updateReminderToggle();
-  updateReminderSub();
-  // Currency
   updateCurrencySub();
   updateGoalSub();
 }
@@ -1846,7 +1843,7 @@ function renderMoney() {
 function renderDonut(txns) {
   const expenses = txns.filter(t => t.type === 'expense');
   const total = expenses.reduce((s,t) => s + t.amount, 0);
-  document.getElementById('donut-center-val').textContent = total > 0 ? '$' + total.toFixed(0) : '$0';
+  document.getElementById('donut-center-val').textContent = total > 0 ? getCurrencySymbol() + total.toFixed(0) : getCurrencySymbol() + '0';
 
   const byCat = {};
   expenses.forEach(t => { byCat[t.cat] = (byCat[t.cat] || 0) + t.amount; });
@@ -1891,21 +1888,49 @@ function renderDonut(txns) {
 function renderTrendBars() {
   const dayNames = ['Su','Mo','Tu','We','Th','Fr','Sa'];
   const bars = document.getElementById('trend-bars');
+  const scroll = document.getElementById('trend-bars-scroll');
   bars.innerHTML = '';
+
+  const year = moneyViewYear;
+  const month = moneyViewMonth;
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const todayStr = new Date().toISOString().slice(0, 10);
+
   const dailyAmts = [];
-  for (let i = 6; i >= 0; i--) {
-    const d = new Date(Date.now() - i * 86400000);
-    const ds = d.toISOString().slice(0,10);
-    const amt = (state.transactions||[]).filter(t=>t.date===ds&&t.type==='expense').reduce((s,t)=>s+t.amount,0);
-    dailyAmts.push({ day: dayNames[d.getDay()], amt });
+  for (let d = 1; d <= daysInMonth; d++) {
+    const ds = `${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const amt = (state.transactions||[]).filter(t => t.date === ds && t.type === 'expense').reduce((s,t) => s + t.amount, 0);
+    const dayOfWeek = new Date(year, month, d).getDay();
+    dailyAmts.push({ date: d, dateStr: ds, dayLabel: dayNames[dayOfWeek], amt });
   }
-  const max = Math.max(...dailyAmts.map(d=>d.amt), 1);
-  dailyAmts.forEach((d,i) => {
-    const h = Math.max(4, Math.round(d.amt/max*56));
-    bars.innerHTML += `<div class="trend-bar-wrap">
-      <div class="trend-bar" style="height:${h}px;background:${i===6?'var(--accent2)':'var(--accent)'}; opacity:${i===6?1:.65}"></div>
-      <div class="trend-day">${d.day}</div>
+
+  const max = Math.max(...dailyAmts.map(d => d.amt), 1);
+  const isCurrentMonth = (year === new Date().getFullYear() && month === new Date().getMonth());
+  const todayDate = new Date().getDate();
+
+  dailyAmts.forEach(d => {
+    const isToday = d.dateStr === todayStr;
+    const isFuture = isCurrentMonth && d.date > todayDate;
+    const h = Math.max(4, Math.round(d.amt / max * 56));
+    const color = isToday ? 'var(--accent2)' : 'var(--accent)';
+    const opacity = isFuture ? 0.2 : (isToday ? 1 : 0.6);
+    bars.innerHTML += `<div class="trend-bar-wrap" title="${d.dateStr}: ${fmt(d.amt)}">
+      <div class="trend-bar" style="height:${h}px;background:${color};opacity:${opacity}"></div>
+      <div class="trend-day" style="${isToday?'color:var(--accent2);font-weight:700':''}">${String(d.date).padStart(2,'0')}</div>
     </div>`;
+  });
+
+  // Auto-scroll: show today's bar or last 7 days in view
+  requestAnimationFrame(() => {
+    const barWidth = 38; // 32px + 6px gap
+    if (isCurrentMonth) {
+      // scroll so today is roughly in the middle of the 7-visible area
+      const targetScroll = Math.max(0, (todayDate - 4) * barWidth);
+      scroll.scrollLeft = targetScroll;
+    } else {
+      // for past months show from start; for future show start
+      scroll.scrollLeft = 0;
+    }
   });
 }
 
@@ -2290,190 +2315,6 @@ function updateCurrencySub() {
   const code = (state.settings && state.settings.currency) || 'USD';
   const c = CURRENCIES.find(c => c.code === code);
   el.textContent = c ? `${c.name} (${c.sym})` : code;
-}
-
-// ═══════════════════════════════════════════════
-//  NOTIFICATIONS & REMINDERS
-// ═══════════════════════════════════════════════
-function updateReminderToggle() {
-  const btn = document.getElementById('toggle-reminders');
-  if (!btn) return;
-  const granted = ('Notification' in window) && Notification.permission === 'granted';
-  const enabled = !!(state.settings && state.settings.reminders) && granted;
-  btn.classList.toggle('on', enabled);
-}
-
-function updateReminderSub() {
-  const el = document.getElementById('reminder-sub');
-  if (!el) return;
-  if (!('Notification' in window)) {
-    el.textContent = '❌ Not supported in this browser';
-    return;
-  }
-  const perm = Notification.permission;
-  const enabled = !!(state.settings && state.settings.reminders);
-  if (perm === 'denied') {
-    el.textContent = '⚠️ Blocked — enable in iPhone Settings → Safari';
-  } else if (perm === 'granted' && enabled) {
-    const count = getTasksForToday().filter(t => t.time && !t.done).length;
-    el.textContent = `✅ On · notifying for ${count} task${count !== 1 ? 's' : ''} today`;
-  } else {
-    el.textContent = 'Tap to enable task notifications';
-  }
-}
-
-function handleReminderToggle() {
-  if (!('Notification' in window)) {
-    toast('❌ Notifications not supported in this browser');
-    return;
-  }
-
-  const btn = document.getElementById('toggle-reminders');
-  const isCurrentlyOn = btn.classList.contains('on');
-
-  if (isCurrentlyOn) {
-    // Disable
-    state.settings = state.settings || {};
-    state.settings.reminders = false;
-    saveState();
-    stopNotifications();
-    updateReminderToggle();
-    updateReminderSub();
-    toast('🔕 Reminders disabled');
-    return;
-  }
-
-  // Enable — check permission first
-  if (Notification.permission === 'denied') {
-    toast('⚠️ Notifications blocked. Go to: iPhone Settings → Safari → Notifications → Allow');
-    return;
-  }
-
-  if (Notification.permission === 'granted') {
-    // Already granted — just enable
-    state.settings = state.settings || {};
-    state.settings.reminders = true;
-    saveState();
-    updateReminderToggle();
-    updateReminderSub();
-    scheduleAllNotifications();
-    toast('🔔 Reminders enabled!');
-  } else {
-    // Ask permission
-    Notification.requestPermission().then(perm => {
-      if (perm === 'granted') {
-        state.settings = state.settings || {};
-        state.settings.reminders = true;
-        saveState();
-        updateReminderToggle();
-        updateReminderSub();
-        scheduleAllNotifications();
-        // Send welcome test notification
-        setTimeout(() => {
-          new Notification('DayFlow 🔔', {
-            body: 'Reminders are on! You\'ll be notified at each task\'s scheduled time.',
-            tag: 'dayflow-welcome'
-          });
-        }, 800);
-        toast('🔔 Reminders enabled! Check your task times.');
-      } else {
-        toast('⚠️ Permission denied. Enable in iPhone Settings → Safari → Notifications.');
-      }
-    });
-  }
-}
-
-// ═══════════════════════════════════════════════
-//  NOTIFICATIONS — POLLING BASED (reliable on iOS Safari)
-// ═══════════════════════════════════════════════
-// iOS Safari kills background setTimeout timers aggressively.
-// Instead we poll every 60 seconds and fire if a task is due within
-// this minute window. We also track which notifications already fired
-// today so we don't double-notify.
-
-let notifPollInterval = null;
-
-function scheduleAllNotifications() {
-  // Clear any existing poll
-  if (notifPollInterval) clearInterval(notifPollInterval);
-  if (!('Notification' in window) || Notification.permission !== 'granted') return;
-  if (!(state.settings && state.settings.reminders)) return;
-
-  // Run immediately then every 60 seconds
-  checkAndFireNotifications();
-  notifPollInterval = setInterval(checkAndFireNotifications, 60000);
-  console.log('DayFlow: notification polling started');
-}
-
-function stopNotifications() {
-  if (notifPollInterval) {
-    clearInterval(notifPollInterval);
-    notifPollInterval = null;
-  }
-}
-
-function checkAndFireNotifications() {
-  if (!('Notification' in window) || Notification.permission !== 'granted') return;
-  if (!(state.settings && state.settings.reminders)) return;
-
-  const now = new Date();
-  const nowH = now.getHours();
-  const nowM = now.getMinutes();
-  const todayKey = now.toISOString().slice(0, 10);
-
-  // Track fired notifications per day in memory (not state, resets on reload which is fine)
-  if (!window._notifFired) window._notifFired = {};
-  if (!window._notifFired[todayKey]) window._notifFired[todayKey] = {};
-
-  const tasks = getTasksForToday().filter(t => t.time && !t.done);
-
-  tasks.forEach(task => {
-    const [taskH, taskM] = task.time.split(':').map(Number);
-
-    // Check exact match: fire if current time matches task time (within same minute)
-    const isOnTime = (nowH === taskH && nowM === taskM);
-
-    // 5-min early warning
-    const earlyDate = new Date();
-    earlyDate.setHours(taskH, taskM, 0, 0);
-    const minsUntil = Math.round((earlyDate - now) / 60000);
-    const isEarly = (minsUntil === 5);
-
-    const onTimeKey  = `on-${task.id}-${todayKey}-${taskH}-${taskM}`;
-    const earlyKey   = `early-${task.id}-${todayKey}-${taskH}-${taskM}`;
-
-    // Fire on-time notification
-    if (isOnTime && !window._notifFired[todayKey][onTimeKey]) {
-      window._notifFired[todayKey][onTimeKey] = true;
-      try {
-        new Notification(`⏰ Time for: ${task.name}`, {
-          body: `${formatTime(task.time)} · ${task.duration} min · ${task.cat}`,
-          tag: onTimeKey,
-        });
-      } catch(e) { console.warn('Notification error:', e); }
-    }
-
-    // Fire 5-min early warning
-    if (isEarly && !window._notifFired[todayKey][earlyKey]) {
-      window._notifFired[todayKey][earlyKey] = true;
-      try {
-        new Notification(`⏳ Up next in 5 min: ${task.name}`, {
-          body: `Starts at ${formatTime(task.time)}`,
-          tag: earlyKey,
-        });
-      } catch(e) { console.warn('Notification error:', e); }
-    }
-  });
-}
-
-// Re-schedule notifications on app init if reminders are on
-function initNotifications() {
-  if (!('Notification' in window)) return;
-  if (Notification.permission === 'granted' && state.settings && state.settings.reminders) {
-    scheduleAllNotifications();
-  }
-  updateReminderToggle();
-  updateReminderSub();
 }
 
 // ═══════════════════════════════════════════════
