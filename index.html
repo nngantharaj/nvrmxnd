@@ -103,8 +103,9 @@
   .timer-badge { background: var(--surface2); border-radius: 10px; padding: 4px 10px; font-size: 11px; font-family: 'Syne', sans-serif; font-weight: 700; color: var(--accent); white-space: nowrap; }
 
   /* Quick Add */
-  .fab { position: fixed; right: 0; bottom: calc(70px + env(safe-area-inset-bottom) + 14px); width: 44px; height: 56px; border-radius: 16px 0 0 16px; background: var(--accent); border: none; color: white; font-size: 26px; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: -3px 0 18px rgba(124,106,247,.45); transition: width .2s; z-index: 50; }
-  .fab:active { width: 38px; }
+  .fab { position: fixed; right: 0; top: 50%; width: 44px; height: 56px; border-radius: 16px 0 0 16px; background: var(--accent); border: none; color: white; font-size: 26px; cursor: grab; display: flex; align-items: center; justify-content: center; box-shadow: -3px 0 18px rgba(124,106,247,.45); transition: width .15s; z-index: 50; touch-action: none; user-select: none; }
+  .fab.dragging { cursor: grabbing; width: 50px; box-shadow: -6px 0 24px rgba(124,106,247,.7); transition: none; }
+  .fab:active:not(.dragging) { width: 38px; }
 
   /* ── Modal ── */
   .modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,.7); z-index: 100; display: none; align-items: flex-end; backdrop-filter: blur(4px); touch-action: none; overscroll-behavior: none; }
@@ -2765,6 +2766,104 @@ function openNotesHistory() {
 function escapeHtml(str) {
   return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 }
+
+// ═══════════════════════════════════════════════
+//  DRAGGABLE FAB
+// ═══════════════════════════════════════════════
+(function() {
+  const NAV_HEIGHT = 70; // approx nav bar height
+  const FAB_HEIGHT = 56;
+  const DRAG_THRESHOLD = 6; // px moved before considered a drag
+
+  let startY = 0;
+  let startTop = 0;
+  let isDragging = false;
+  let didDrag = false;
+  let fabTop = null; // null = use default (50%)
+
+  function getFab() { return document.getElementById('fab-btn'); }
+
+  function clampTop(top) {
+    const safeBottom = NAV_HEIGHT + 14;
+    const maxTop = window.innerHeight - FAB_HEIGHT - safeBottom;
+    const minTop = 10;
+    return Math.max(minTop, Math.min(maxTop, top));
+  }
+
+  function applyTop(top) {
+    const fab = getFab();
+    fab.style.top = top + 'px';
+    fab.style.bottom = 'auto';
+    fab.style.transform = 'none';
+    fabTop = top;
+    try { localStorage.setItem('dayflow_fab_top', top); } catch(e) {}
+  }
+
+  function initFabPosition() {
+    const fab = getFab();
+    const saved = localStorage.getItem('dayflow_fab_top');
+    if (saved !== null) {
+      applyTop(clampTop(parseInt(saved)));
+    } else {
+      // Default: above nav bar
+      const defaultTop = window.innerHeight - NAV_HEIGHT - FAB_HEIGHT - 14;
+      applyTop(defaultTop);
+    }
+  }
+
+  function onPointerDown(e) {
+    const fab = getFab();
+    startY = e.type === 'touchstart' ? e.touches[0].clientY : e.clientY;
+    startTop = fabTop !== null ? fabTop : fab.getBoundingClientRect().top;
+    isDragging = false;
+    didDrag = false;
+    fab.classList.remove('dragging');
+
+    const onMove = (ev) => {
+      const clientY = ev.type === 'touchmove' ? ev.touches[0].clientY : ev.clientY;
+      const delta = clientY - startY;
+      if (!isDragging && Math.abs(delta) > DRAG_THRESHOLD) {
+        isDragging = true;
+        didDrag = true;
+        fab.classList.add('dragging');
+      }
+      if (isDragging) {
+        ev.preventDefault();
+        applyTop(clampTop(startTop + delta));
+      }
+    };
+
+    const onUp = (ev) => {
+      fab.classList.remove('dragging');
+      document.removeEventListener('mousemove', onMove);
+      document.removeEventListener('mouseup', onUp);
+      document.removeEventListener('touchmove', onMove);
+      document.removeEventListener('touchend', onUp);
+      // If barely moved = tap → trigger action
+      if (!didDrag) handleFab();
+    };
+
+    document.addEventListener('mousemove', onMove);
+    document.addEventListener('mouseup', onUp);
+    document.addEventListener('touchmove', onMove, { passive: false });
+    document.addEventListener('touchend', onUp);
+  }
+
+  // Init after DOM ready
+  document.addEventListener('DOMContentLoaded', () => {
+    const fab = getFab();
+    if (!fab) return;
+    fab.removeAttribute('onclick'); // remove static onclick, handled in onUp
+    fab.addEventListener('mousedown', onPointerDown);
+    fab.addEventListener('touchstart', onPointerDown, { passive: true });
+    initFabPosition();
+  });
+
+  // Also re-init on window resize to re-clamp
+  window.addEventListener('resize', () => {
+    if (fabTop !== null) applyTop(clampTop(fabTop));
+  });
+})();
 
 // ═══════════════════════════════════════════════
 //  START
