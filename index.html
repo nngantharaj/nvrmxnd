@@ -531,10 +531,7 @@
 
       <!-- Balance hero -->
       <div class="balance-hero">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:2px">
-          <div class="balance-label">Total Balance</div>
-          <button onclick="openBudgetModal()" style="background:rgba(124,106,247,.18);border:1px solid rgba(124,106,247,.35);color:var(--accent);border-radius:10px;padding:4px 10px;font-size:11px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif" id="budget-set-btn">💰 Set Budget</button>
-        </div>
+        <div class="balance-label">Total Balance</div>
         <div class="balance-amount"><span class="currency" id="balance-currency-sym">$</span><span id="balance-val">0.00</span></div>
         <div id="pocket-chip-wrap" style="margin-top:4px"></div>
         <div class="balance-row">
@@ -1951,17 +1948,20 @@ function renderMoney() {
   // Balance color
   document.querySelector('.balance-amount').style.color = balance >= 0 ? 'var(--text)' : 'var(--danger)';
 
-  // "In my pocket" chip + budget button label
+  // Single chip — "Set Budget" or "In my pocket" in same spot
   const budget = state.budget || 0;
-  const pocket = budget ? Math.max(0, budget - expense) : null;
+  const remaining = budget > 0 ? budget - expense : null;
   const chipWrap = document.getElementById('pocket-chip-wrap');
-  chipWrap.innerHTML = pocket !== null
-    ? `<div class="pocket-chip"><span>💳 In my pocket: ${fmt(pocket)}</span></div>`
-    : '';
-  // Update budget button label
-  const budgetBtn = document.getElementById('budget-set-btn');
-  if (budgetBtn) budgetBtn.textContent = budget > 0 ? `💰 ${fmt(budget)}` : '💰 Set Budget';
-
+  if (budget > 0) {
+    const over = remaining < 0;
+    chipWrap.innerHTML = `<div class="pocket-chip" onclick="openBudgetModal()" style="cursor:pointer;${over ? 'background:rgba(247,106,106,.12);border-color:rgba(247,106,106,.3)' : ''}">
+      <span style="${over ? 'color:var(--danger)' : ''}">${over ? '⚠️ Over by ' + fmt(Math.abs(remaining)) : '💳 In my pocket: ' + fmt(Math.max(0, remaining))}</span>
+    </div>`;
+  } else {
+    chipWrap.innerHTML = `<div class="pocket-chip" onclick="openBudgetModal()" style="cursor:pointer">
+      <span>💰 Set monthly budget</span>
+    </div>`;
+  }
   // Budget bar
   if (budget > 0) {
     const pct = Math.min(100, Math.round(expense / budget * 100));
