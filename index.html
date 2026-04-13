@@ -187,6 +187,7 @@
   /* Timer active */
   .timer-active-bar { margin: 10px 20px 0; background: linear-gradient(135deg, rgba(124,106,247,.15), rgba(106,247,200,.1)); border: 1px solid rgba(124,106,247,.3); border-radius: 16px; padding: 12px 16px; display: flex; align-items: center; justify-content: space-between; }
   .timer-active-bar.hidden { display: none; }
+  .hidden { display: none !important; }
   .timer-label { font-size: 12px; color: var(--muted); }
   .timer-count { font-family: 'Syne', sans-serif; font-size: 20px; font-weight: 800; color: var(--accent); }
   .timer-stop { background: rgba(247,106,106,.15); color: var(--danger); border: none; border-radius: 8px; padding: 6px 12px; font-size: 12px; cursor: pointer; }
@@ -367,6 +368,53 @@
   /* "In my pocket" feature */
   .pocket-chip { display: inline-flex; align-items: center; gap: 6px; background: rgba(106,247,200,.12); border: 1px solid rgba(106,247,200,.25); border-radius: 20px; padding: 5px 12px; margin-top: 8px; }
   .pocket-chip span { font-size: 12px; color: var(--accent3); font-weight: 600; }
+
+  /* Health quick log */
+  .health-card { margin: 12px 20px 0; background: var(--surface); border: 1px solid var(--border); border-radius: 18px; padding: 14px 16px; display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+  .health-block { flex: 1; min-width: 120px; }
+  .health-block h4 { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); margin-bottom: 8px; }
+  .health-row { display: flex; align-items: center; gap: 8px; }
+  .health-btn { width: 32px; height: 32px; border-radius: 10px; border: 1px solid var(--border); background: var(--surface2); color: var(--text); font-size: 18px; cursor: pointer; line-height: 1; }
+  .health-val { font-family: 'Syne', sans-serif; font-size: 20px; font-weight: 800; min-width: 36px; text-align: center; }
+  .health-steps-input { width: 100%; background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; padding: 8px 10px; color: var(--text); font-size: 14px; }
+
+  /* Pomodoro */
+  .pomo-card { margin: 12px 20px 0; background: linear-gradient(135deg, rgba(124,106,247,.12), rgba(247,145,106,.08)); border: 1px solid rgba(124,106,247,.25); border-radius: 18px; padding: 14px 16px; }
+  .pomo-card h4 { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); margin-bottom: 10px; }
+  .pomo-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+  .pomo-presets { display: flex; gap: 8px; flex-wrap: wrap; }
+  .pomo-presets button { background: var(--surface2); border: 1px solid var(--border); color: var(--text); border-radius: 10px; padding: 8px 12px; font-size: 12px; font-weight: 600; cursor: pointer; font-family: 'DM Sans', sans-serif; }
+  .pomo-presets button:active { transform: scale(.98); }
+  .pomo-display { font-family: 'Syne', sans-serif; font-size: 28px; font-weight: 800; color: var(--accent); }
+  .pomo-phase { font-size: 11px; color: var(--muted); margin-top: 4px; }
+  .pomo-stop { background: rgba(247,106,106,.15); color: var(--danger); border: none; border-radius: 10px; padding: 8px 14px; font-size: 12px; cursor: pointer; }
+
+  /* Heatmap */
+  .heatmap-wrap { overflow-x: auto; padding: 4px 0; }
+  .heatmap-grid { display: grid; grid-template-columns: repeat(13, 1fr); gap: 3px; min-width: 260px; }
+  .heatmap-cell { aspect-ratio: 1; border-radius: 3px; background: var(--border); min-width: 10px; }
+  .heatmap-cell.l0 { background: var(--border); opacity: .4; }
+  .heatmap-cell.l1 { background: rgba(124,106,247,.35); }
+  .heatmap-cell.l2 { background: rgba(124,106,247,.55); }
+  .heatmap-cell.l3 { background: rgba(124,106,247,.85); }
+  .heatmap-cell.l4 { background: var(--accent); }
+  .heatmap-legend { display: flex; align-items: center; gap: 6px; font-size: 10px; color: var(--muted); margin-top: 8px; }
+
+  /* Toast undo */
+  #toast { max-width: 92%; white-space: normal; text-align: left; line-height: 1.4; }
+  #toast .toast-undo { margin-left: 10px; background: rgba(124,106,247,.25); border: 1px solid var(--accent); color: var(--text); border-radius: 8px; padding: 3px 10px; font-size: 11px; cursor: pointer; font-family: inherit; }
+
+  /* Split txn rows */
+  .split-row { display: flex; gap: 8px; margin-bottom: 8px; align-items: center; }
+  .split-row select { flex: 1; }
+  .split-row input { width: 90px; }
+
+  /* Balances / bills */
+  .balance-line { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--border); font-size: 13px; }
+  .balance-line:last-child { border-bottom: none; }
+  .habit-min-btn { position: absolute; right: 8px; bottom: 8px; font-size: 10px; padding: 2px 6px; border-radius: 6px; border: 1px solid var(--border); background: var(--surface2); color: var(--muted); cursor: pointer; z-index: 2; }
+  .habit-card { position: relative; }
+  .habit-dot.min { opacity: .75; border-style: dashed; }
 </style>
 </head>
 <body>
@@ -375,13 +423,16 @@
 
     <!-- ══════ TODAY ══════ -->
     <div id="page-today" class="page active">
+      <div data-today-widget="greeting" class="today-widget">
       <div class="greeting-block">
         <div class="date-label" id="today-date"></div>
         <h1 id="greeting-text">Good Morning ☀️</h1>
         <div class="quote quote-anim" id="daily-quote"></div>
       </div>
+      </div>
 
       <!-- Progress Ring -->
+      <div data-today-widget="progress" class="today-widget">
       <div class="progress-card">
         <div class="ring-wrap">
           <svg width="80" height="80" viewBox="0 0 80 80">
@@ -403,8 +454,28 @@
           </div>
         </div>
       </div>
+      </div>
+
+      <div data-today-widget="health" class="today-widget">
+      <div class="section-label"><div class="dot" style="background:#6af7c8"></div>Health</div>
+      <div class="health-card" id="health-card-wrap">
+        <div class="health-block">
+          <h4>Water (glasses)</h4>
+          <div class="health-row">
+            <button type="button" class="health-btn" onclick="adjustHealth('water',-1)">−</button>
+            <span class="health-val" id="health-water-val">0</span>
+            <button type="button" class="health-btn" onclick="adjustHealth('water',1)">+</button>
+          </div>
+        </div>
+        <div class="health-block">
+          <h4>Steps (approx.)</h4>
+          <input type="number" class="health-steps-input" id="health-steps-input" placeholder="0" min="0" step="100" onchange="saveHealthSteps()">
+        </div>
+      </div>
+      </div>
 
       <!-- Mood check -->
+      <div data-today-widget="mood" class="today-widget">
       <div class="section-label"><div class="dot" style="background:var(--accent4)"></div>How are you feeling?</div>
       <div class="mood-row" id="mood-row">
         <div class="mood-btn" data-mood="😔" onclick="setMood(this)">😔<span>Low</span></div>
@@ -412,6 +483,28 @@
         <div class="mood-btn" data-mood="🙂" onclick="setMood(this)">🙂<span>Good</span></div>
         <div class="mood-btn" data-mood="😄" onclick="setMood(this)">😄<span>Great</span></div>
         <div class="mood-btn" data-mood="🤩" onclick="setMood(this)">🤩<span>Amazing</span></div>
+      </div>
+      </div>
+
+      <div data-today-widget="pomodoro" class="today-widget">
+      <div class="pomo-card" id="pomo-card">
+        <h4>Focus (Pomodoro)</h4>
+        <div class="pomo-row">
+          <div>
+            <div class="pomo-display" id="pomo-display">25:00</div>
+            <div class="pomo-phase" id="pomo-phase">Tap a preset to start</div>
+          </div>
+          <div class="pomo-presets">
+            <button type="button" onclick="startPomodoro(25)">25′</button>
+            <button type="button" onclick="startPomodoro(45)">45′</button>
+            <button type="button" onclick="startPomodoro(50)">50′</button>
+          </div>
+        </div>
+        <div style="margin-top:10px;display:flex;justify-content:space-between;align-items:center">
+          <span style="font-size:11px;color:var(--muted)">Sessions today: <b id="pomo-sessions-today">0</b></span>
+          <button type="button" class="pomo-stop hidden" id="pomo-stop-btn" onclick="stopPomodoro()">Stop</button>
+        </div>
+      </div>
       </div>
 
       <!-- Active timer -->
@@ -423,6 +516,7 @@
         <button class="timer-stop" onclick="stopTimer()">✓ Done</button>
       </div>
 
+      <div data-today-widget="tasks" class="today-widget">
       <div class="section-label" style="display:flex;align-items:center;justify-content:space-between;padding-right:20px;padding-top:8px">
         <div style="display:flex;align-items:center;gap:8px"><div class="dot" style="background:var(--accent)"></div>Tasks</div>
         <button type="button" class="pill-btn-upcoming" onclick="openUpcomingModal()">Upcoming (<span id="upcoming-count">0</span>)</button>
@@ -430,14 +524,17 @@
 
       <!-- Task sections -->
       <div id="tasks-container"></div>
+      </div>
 
       <!-- Daily note -->
+      <div data-today-widget="note" class="today-widget">
       <div class="section-label" style="display:flex;align-items:center;justify-content:space-between;padding-right:20px">
         <div style="display:flex;align-items:center;gap:8px"><div class="dot" style="background:var(--accent3)"></div>Daily Note</div>
         <button type="button" class="pill-btn-notes" onclick="openNotesHistory()">Past Notes</button>
       </div>
       <div class="note-card">
         <textarea id="daily-note" rows="3" placeholder="Jot down thoughts for today…"></textarea>
+      </div>
       </div>
     </div>
 
@@ -484,6 +581,20 @@
             <div><div class="settings-label">Dark Mode</div><div class="settings-sub" id="dark-mode-sub">Currently: Dark</div></div>
           </div>
           <button class="toggle on" id="toggle-dark"></button>
+        </div>
+        <div class="settings-item" onclick="openTodayWidgetsModal()">
+          <div class="settings-item-left">
+            <div class="settings-icon" style="background:rgba(124,106,247,.2)">📐</div>
+            <div><div class="settings-label">Today screen</div><div class="settings-sub">Show/hide & order sections</div></div>
+          </div>
+          <span style="color:var(--accent);font-size:18px">›</span>
+        </div>
+        <div class="settings-item" onclick="openRoutineTemplatesModal()">
+          <div class="settings-item-left">
+            <div class="settings-icon" style="background:rgba(247,145,106,.15)">📋</div>
+            <div><div class="settings-label">Routine templates</div><div class="settings-sub">Save & apply task sets</div></div>
+          </div>
+          <span style="color:var(--accent2);font-size:18px">›</span>
         </div>
         <div class="settings-item" onclick="openGoalModal()">
           <div class="settings-item-left">
@@ -598,6 +709,22 @@
           <span id="budget-spent-label">$0 spent</span>
           <span id="budget-limit-label">of $0 budget</span>
         </div>
+      </div>
+
+      <!-- IOU balances -->
+      <div class="donut-card" style="cursor:default">
+        <h3>Who owes whom</h3>
+        <div id="iou-balance-list" style="margin-top:8px"></div>
+        <button type="button" class="btn-primary" style="width:100%;margin-top:12px" onclick="openIouModal(null)">+ Add balance</button>
+      </div>
+
+      <!-- Recurring bills -->
+      <div class="donut-card" style="cursor:default">
+        <h3>Recurring bills</h3>
+        <p style="font-size:12px;color:var(--muted);margin:8px 0">Templates for regular payments. Post them into the current month when due.</p>
+        <div id="recurring-bills-list"></div>
+        <button type="button" class="btn-ghost" style="width:100%;margin-top:8px" onclick="openRecurringBillModal(null)">+ Add recurring bill</button>
+        <button type="button" class="btn-primary" style="width:100%;margin-top:8px" onclick="postRecurringBillsForMonth()">Post due bills this month</button>
       </div>
 
       <!-- Spending by category donut -->
@@ -828,6 +955,10 @@
         <option value="#4a6af7">Blue</option>
       </select>
     </div>
+    <div class="form-group" style="display:flex;align-items:center;justify-content:space-between;gap:12px">
+      <label style="margin:0">Allow “minimum” day (lighter check)</label>
+      <button type="button" class="toggle" id="habit-minimum-toggle" onclick="document.getElementById('habit-minimum-toggle').classList.toggle('on')"></button>
+    </div>
     <div class="btn-row">
       <button class="btn-ghost" onclick="closeModal('habit-modal')">Cancel</button>
       <button class="btn-primary" onclick="saveHabit()">Save Habit</button>
@@ -864,6 +995,18 @@
         <option value="bills">⚡ Bills & Utilities</option>
         <option value="other">📦 Other</option>
       </select>
+    </div>
+    <div class="form-group" id="txn-split-wrap" style="display:none">
+      <label>Split across categories (must sum to total)</label>
+      <div id="txn-split-rows"></div>
+      <button type="button" class="btn-ghost" style="width:100%;margin-top:6px;font-size:13px" onclick="addSplitRow()">+ Add split line</button>
+      <div id="txn-split-sum-hint" style="font-size:11px;color:var(--muted);margin-top:6px"></div>
+    </div>
+    <div class="form-group" id="txn-split-toggle-wrap">
+      <label style="display:flex;align-items:center;gap:10px;cursor:pointer">
+        <input type="checkbox" id="txn-split-checkbox" onchange="toggleTxnSplitUI()">
+        <span>Split this expense across categories</span>
+      </label>
     </div>
     <div class="form-group">
       <label>Date</label>
@@ -998,6 +1141,101 @@
   </div>
 </div>
 
+<!-- Today widgets modal -->
+<div class="modal-backdrop" id="today-widgets-modal">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <h2>Today screen 📐</h2>
+    <p style="font-size:13px;color:var(--muted);margin-bottom:12px">Toggle sections and use ↑↓ to change order.</p>
+    <div id="today-widgets-editor"></div>
+    <div class="btn-row" style="margin-top:16px">
+      <button class="btn-ghost" onclick="closeModal('today-widgets-modal')">Close</button>
+      <button class="btn-primary" onclick="saveTodayWidgets();closeModal('today-widgets-modal')">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- Routine templates modal -->
+<div class="modal-backdrop" id="routine-templates-modal">
+  <div class="modal" style="max-height:88dvh">
+    <div class="modal-handle"></div>
+    <h2>Routine templates 📋</h2>
+    <p style="font-size:13px;color:var(--muted);margin-bottom:12px">Save your current <b>today</b> task list as a template, or apply a saved set (adds tasks with new IDs).</p>
+    <div class="form-group">
+      <label>New template name</label>
+      <input type="text" id="routine-template-name-input" placeholder="e.g. Travel day" maxlength="36">
+    </div>
+    <button type="button" class="btn-primary" style="width:100%;margin-bottom:16px" onclick="saveRoutineTemplateFromToday()">Save from today’s tasks</button>
+    <div id="routine-templates-list"></div>
+  </div>
+</div>
+
+<!-- IOU modal -->
+<div class="modal-backdrop" id="iou-modal">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <h2 id="iou-modal-title">Balance</h2>
+    <div class="form-group">
+      <label>Person / label</label>
+      <input type="text" id="iou-person-input" placeholder="Name" maxlength="40">
+    </div>
+    <div class="form-group">
+      <label>Direction</label>
+      <select id="iou-dir-input">
+        <option value="i_owe">I owe them</option>
+        <option value="they_owe">They owe me</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Amount (<span id="iou-currency-sym">$</span>)</label>
+      <input type="number" id="iou-amount-input" min="0.01" step="0.01" inputmode="decimal">
+    </div>
+    <div class="form-group">
+      <label>Note (optional)</label>
+      <input type="text" id="iou-note-input" maxlength="80">
+    </div>
+    <div class="btn-row">
+      <button class="btn-ghost" onclick="closeModal('iou-modal')">Cancel</button>
+      <button class="btn-primary" onclick="saveIou()">Save</button>
+    </div>
+    <div id="iou-delete-wrap"></div>
+  </div>
+</div>
+
+<!-- Recurring bill modal -->
+<div class="modal-backdrop" id="recurring-bill-modal">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <h2 id="recurring-bill-modal-title">Recurring bill</h2>
+    <div class="form-group">
+      <label>Label</label>
+      <input type="text" id="bill-label-input" placeholder="e.g. Rent" maxlength="40">
+    </div>
+    <div class="form-group">
+      <label>Amount</label>
+      <input type="number" id="bill-amount-input" min="0.01" step="0.01">
+    </div>
+    <div class="form-group">
+      <label>Category</label>
+      <select id="bill-cat-input">
+        <option value="bills">⚡ Bills</option>
+        <option value="food">🍔 Food</option>
+        <option value="transport">🚗 Transport</option>
+        <option value="other">📦 Other</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Day of month (1–28)</label>
+      <input type="number" id="bill-day-input" min="1" max="28" value="1">
+    </div>
+    <div class="btn-row">
+      <button class="btn-ghost" onclick="closeModal('recurring-bill-modal')">Cancel</button>
+      <button class="btn-primary" onclick="saveRecurringBill()">Save</button>
+    </div>
+    <div id="recurring-bill-delete-wrap"></div>
+  </div>
+</div>
+
 <!-- Upcoming tasks modal -->
 <div class="modal-backdrop" id="upcoming-modal">
   <div class="modal" style="max-height:85dvh;display:flex;flex-direction:column">
@@ -1048,6 +1286,7 @@ function loadState() {
     if (raw) {
       const s = JSON.parse(raw);
       migrateBudgetState(s);
+      migrateFeaturesState(s);
       return s;
     }
   } catch(e) {}
@@ -1064,6 +1303,28 @@ function migrateBudgetState(s) {
     }
   }
   delete s.budget;
+}
+
+function migrateFeaturesState(s) {
+  if (!s.healthLog || typeof s.healthLog !== 'object') s.healthLog = {};
+  if (!s.balances || !Array.isArray(s.balances)) s.balances = [];
+  if (!s.recurringBills || !Array.isArray(s.recurringBills)) s.recurringBills = [];
+  if (!s.routineTemplates || !Array.isArray(s.routineTemplates)) s.routineTemplates = [];
+  if (!s.pomodoro || typeof s.pomodoro !== 'object') s.pomodoro = { sessionsByDate: {} };
+  if (!s.pomodoro.sessionsByDate) s.pomodoro.sessionsByDate = {};
+  if (!s.nextBalanceId) s.nextBalanceId = 1;
+  if (s.nextBillId == null) s.nextBillId = 1;
+  if (s.nextTemplateId == null) s.nextTemplateId = 1;
+  if (!s.recurringPosted || typeof s.recurringPosted !== 'object') s.recurringPosted = {};
+  s.settings = s.settings || {};
+  if (!s.settings.todayWidgetOrder) {
+    s.settings.todayWidgetOrder = ['greeting','progress','health','mood','pomodoro','tasks','note'];
+  }
+  if (!s.settings.todayWidgetHidden || typeof s.settings.todayWidgetHidden !== 'object') s.settings.todayWidgetHidden = {};
+  (s.habits || []).forEach(h => {
+    if (!Array.isArray(h.historyMin)) h.historyMin = [];
+    if (h.allowMinimum === undefined) h.allowMinimum = false;
+  });
 }
 
 function getDefaultState() {
@@ -1089,12 +1350,25 @@ function getDefaultState() {
     notes: {},
     streak: 0,
     lastActiveDate: '',
-    settings: { reminders: true },
+    settings: {
+      reminders: true,
+      todayWidgetOrder: ['greeting','progress','health','mood','pomodoro','tasks','note'],
+      todayWidgetHidden: {},
+    },
     nextTaskId: 10,
     nextHabitId: 4,
     transactions: [],
     budgetsByMonth: {},
     savingsGoals: [],
+    healthLog: {},
+    balances: [],
+    recurringBills: [],
+    routineTemplates: [],
+    pomodoro: { sessionsByDate: {} },
+    nextBalanceId: 1,
+    nextBillId: 1,
+    nextTemplateId: 1,
+    recurringPosted: {},
   };
 }
 
@@ -1149,6 +1423,9 @@ function init() {
       saveState();
     });
   }
+  applyTodayWidgetLayout();
+  renderHealthToday();
+  renderPomoSessionsToday();
 }
 
 function resetDailyTasksIfNeeded() {
@@ -1372,17 +1649,32 @@ function toggleTask(id, e) {
   e && e.stopPropagation();
   const task = state.tasks.find(t => t.id === id);
   if (!task) return;
+  const t = today();
   task.done = !task.done;
   saveState();
   renderTasks();
   renderProgress();
   if (task.done) {
-    toast(`✅ "${task.name}" done!`);
-    // record in completedDays
-    const t = today();
     if (!state.completedDays[t]) state.completedDays[t] = [];
     if (!state.completedDays[t].includes(id)) state.completedDays[t].push(id);
     checkAllDone();
+    toast(`✅ "${task.name}" done!`, () => {
+      task.done = false;
+      state.completedDays[t] = (state.completedDays[t] || []).filter(x => x !== id);
+      saveState();
+      renderTasks();
+      renderProgress();
+    });
+  } else {
+    state.completedDays[t] = (state.completedDays[t] || []).filter(x => x !== id);
+    toast(`↩ "${task.name}" unchecked`, () => {
+      task.done = true;
+      if (!state.completedDays[t]) state.completedDays[t] = [];
+      if (!state.completedDays[t].includes(id)) state.completedDays[t].push(id);
+      saveState();
+      renderTasks();
+      renderProgress();
+    });
   }
 }
 
@@ -1502,11 +1794,13 @@ function stopTimer() {
 }
 
 function updateTimerDisplay() {
-  if (!timerStart) return;
-  const elapsed = Math.floor((Date.now() - timerStart) / 1000);
-  const m = Math.floor(elapsed / 60).toString().padStart(2,'0');
-  const s = (elapsed % 60).toString().padStart(2,'0');
-  document.getElementById('timer-display').textContent = `${m}:${s}`;
+  if (timerStart) {
+    const elapsed = Math.floor((Date.now() - timerStart) / 1000);
+    const m = Math.floor(elapsed / 60).toString().padStart(2,'0');
+    const s = (elapsed % 60).toString().padStart(2,'0');
+    document.getElementById('timer-display').textContent = `${m}:${s}`;
+  }
+  tickPomodoro();
 }
 
 // ═══════════════════════════════════════════════
@@ -1529,15 +1823,22 @@ function buildHabitCard(habit) {
   const div = document.createElement('div');
   div.className = 'habit-card pop';
   const t = today();
+  const histMin = habit.historyMin || [];
   const doneToday = habit.history.includes(t);
+  const minToday = histMin.includes(t);
 
-  // Week dots — last 7 calendar days (local)
   const weekDots = [];
   for (let i = 6; i >= 0; i--) {
     const d = new Date();
     d.setDate(d.getDate() - i);
     const ds = formatDateKeyLocal(d);
-    weekDots.push(`<div class="habit-dot ${habit.history.includes(ds) ? 'done' : ''}" style="${habit.history.includes(ds) ? 'background:'+habit.color : ''}"></div>`);
+    const full = habit.history.includes(ds);
+    const min = histMin.includes(ds);
+    let cls = 'habit-dot';
+    let st = '';
+    if (full) { cls += ' done'; st = 'background:' + habit.color; }
+    else if (min) { cls += ' min'; st = 'border-color:' + habit.color + ';background:rgba(255,255,255,.06)'; }
+    weekDots.push(`<div class="${cls}" style="${st}"></div>`);
   }
 
   const weekProgress = habit.history.filter(ds => {
@@ -1546,22 +1847,45 @@ function buildHabitCard(habit) {
     return ago <= 7 && ago >= 0;
   }).length;
 
+  const minBtn = habit.allowMinimum
+    ? `<button type="button" class="habit-min-btn" onclick="event.stopPropagation();toggleHabitMinimum(${habit.id})">${minToday ? '✓ min' : 'min'}</button>`
+    : '';
+
   div.innerHTML = `
     <div class="habit-top">
       <div class="habit-emoji">${habit.emoji}</div>
       <div style="display:flex;align-items:center;gap:6px">
         <div class="habit-streak">🔥${habit.streak}</div>
-        <button onclick="openEditHabit(${habit.id},event)" style="background:rgba(255,255,255,.07);border:none;border-radius:8px;padding:3px 7px;color:var(--muted);font-size:13px;cursor:pointer">✏️</button>
+        <button type="button" onclick="event.stopPropagation();openEditHabit(${habit.id},event)" style="background:rgba(255,255,255,.07);border:none;border-radius:8px;padding:3px 7px;color:var(--muted);font-size:13px;cursor:pointer">✏️</button>
       </div>
     </div>
     <div class="habit-name">${habit.name}</div>
     <div class="habit-freq">${habit.freq} · ${weekProgress}/7 this week</div>
     <div class="habit-week">${weekDots.join('')}</div>
+    ${minBtn}
   `;
-  if (doneToday) div.style.borderColor = habit.color;
-  div.style.opacity = doneToday ? '1' : '.85';
+  if (doneToday || minToday) div.style.borderColor = habit.color;
+  div.style.opacity = (doneToday || minToday) ? '1' : '.85';
   div.addEventListener('click', () => toggleHabit(habit.id));
   return div;
+}
+
+function toggleHabitMinimum(id) {
+  const habit = state.habits.find(h => h.id === id);
+  if (!habit || !habit.allowMinimum) return;
+  if (!habit.historyMin) habit.historyMin = [];
+  const d = today();
+  if (habit.historyMin.includes(d)) {
+    habit.historyMin = habit.historyMin.filter(x => x !== d);
+    toast(`↩ Minimum cleared for "${habit.name}"`);
+  } else {
+    habit.historyMin.push(d);
+    toast(`✓ Minimum logged for "${habit.name}"`);
+  }
+  saveState();
+  renderHabits();
+  renderMedals();
+  renderStats();
 }
 
 function toggleHabit(id) {
@@ -1698,7 +2022,34 @@ function renderStats() {
       <h3>7-Day Mood Trend</h3>
       <div class="mood-chart">${moodBars.join('')}</div>
     </div>
+    <div class="stat-card wide">
+      <h3>Task completion heatmap</h3>
+      <p style="font-size:11px;color:var(--muted);margin-bottom:10px">Last ~13 weeks · darker = more of that day’s tasks checked off</p>
+      <div class="heatmap-wrap">${buildCompletionHeatmapHtml()}</div>
+    </div>
   `;
+}
+
+function completionRatioForDate(ds) {
+  const scheduled = state.tasks.filter(t => taskOccursOnDate(t, ds)).length;
+  if (!scheduled) return 0;
+  const doneIds = state.completedDays[ds] || [];
+  const done = doneIds.filter(id => state.tasks.some(t => t.id === id && taskOccursOnDate(t, ds))).length;
+  return Math.min(1, done / scheduled);
+}
+
+function buildCompletionHeatmapHtml() {
+  const cells = [];
+  for (let i = 90; i >= 0; i--) {
+    const d = new Date();
+    d.setDate(d.getDate() - i);
+    const ds = formatDateKeyLocal(d);
+    const r = completionRatioForDate(ds);
+    const lvl = r === 0 ? 0 : r < 0.25 ? 1 : r < 0.5 ? 2 : r < 0.85 ? 3 : 4;
+    cells.push(`<div class="heatmap-cell l${lvl}" title="${ds}"></div>`);
+  }
+  return `<div class="heatmap-grid" style="grid-template-columns:repeat(7,1fr);grid-auto-rows:12px">${cells.join('')}</div>
+    <div class="heatmap-legend"><span>Less</span><div class="heatmap-cell l0" style="width:12px;height:12px"></div><div class="heatmap-cell l1" style="width:12px;height:12px"></div><div class="heatmap-cell l2" style="width:12px;height:12px"></div><div class="heatmap-cell l3" style="width:12px;height:12px"></div><div class="heatmap-cell l4" style="width:12px;height:12px"></div><span>More</span></div>`;
 }
 
 // ═══════════════════════════════════════════════
@@ -1803,14 +2154,21 @@ function saveTask() {
 }
 
 function deleteTask(id) {
-  if (confirm('Delete this task?')) {
-    state.tasks = state.tasks.filter(t => t.id !== id);
+  if (!confirm('Delete this task?')) return;
+  const idx = state.tasks.findIndex(t => t.id === id);
+  if (idx < 0) return;
+  const snap = JSON.parse(JSON.stringify(state.tasks[idx]));
+  state.tasks.splice(idx, 1);
+  saveState();
+  closeModal('add-modal');
+  renderTasks();
+  renderStats();
+  toast('🗑 Task deleted', () => {
+    state.tasks.splice(idx, 0, snap);
     saveState();
-    closeModal('add-modal');
     renderTasks();
     renderStats();
-    toast('🗑 Task deleted');
-  }
+  });
 }
 
 let editingHabitId = null;
@@ -1822,6 +2180,8 @@ function openHabitModal() {
   document.getElementById('habit-name-input').value = '';
   document.getElementById('habit-freq-input').value = 'daily';
   document.getElementById('habit-color-input').value = '#7c6af7';
+  const minT = document.getElementById('habit-minimum-toggle');
+  minT.classList.remove('on');
   document.getElementById('delete-habit-wrap').innerHTML = '';
   document.querySelectorAll('#habit-emoji-picker .emoji-opt').forEach(e => e.classList.toggle('selected', e.textContent === selectedHabitEmoji));
   openModal('habit-modal');
@@ -1837,6 +2197,7 @@ function openEditHabit(id, e) {
   document.getElementById('habit-name-input').value = habit.name;
   document.getElementById('habit-freq-input').value = habit.freq;
   document.getElementById('habit-color-input').value = habit.color;
+  document.getElementById('habit-minimum-toggle').classList.toggle('on', !!habit.allowMinimum);
   document.querySelectorAll('#habit-emoji-picker .emoji-opt').forEach(e => e.classList.toggle('selected', e.textContent === selectedHabitEmoji));
   document.getElementById('delete-habit-wrap').innerHTML = `<button class="btn-danger" style="width:100%" onclick="deleteHabit(${id})">🗑 Delete Habit</button>`;
   openModal('habit-modal');
@@ -1857,6 +2218,7 @@ function saveHabit() {
   const name = document.getElementById('habit-name-input').value.trim();
   if (!name) { toast('⚠️ Please enter a habit name'); return; }
 
+  const allowMin = document.getElementById('habit-minimum-toggle').classList.contains('on');
   if (editingHabitId) {
     const habit = state.habits.find(h => h.id === editingHabitId);
     if (habit) {
@@ -1864,6 +2226,8 @@ function saveHabit() {
       habit.name = name;
       habit.freq = document.getElementById('habit-freq-input').value;
       habit.color = document.getElementById('habit-color-input').value;
+      habit.allowMinimum = allowMin;
+      if (!habit.historyMin) habit.historyMin = [];
       toast('✏️ Habit updated!');
     }
   } else {
@@ -1876,6 +2240,8 @@ function saveHabit() {
       streak: 0,
       longestStreak: 0,
       history: [],
+      historyMin: [],
+      allowMinimum: allowMin,
     });
     toast('🌱 Habit added!');
   }
@@ -2039,6 +2405,7 @@ function showPage(name, btn) {
   if (name === 'stats') renderStats();
   if (name === 'habits') { renderHabits(); renderMedals(); }
   if (name === 'money') renderMoney();
+  if (name === 'today') { applyTodayWidgetLayout(); renderHealthToday(); }
 
   // Change FAB based on page
   const fab = document.getElementById('fab-btn');
@@ -2049,12 +2416,29 @@ function showPage(name, btn) {
 //  TOAST
 // ═══════════════════════════════════════════════
 let toastTimeout;
-function toast(msg) {
+function toast(msg, undoFn) {
   const el = document.getElementById('toast');
-  el.textContent = msg;
-  el.classList.add('show');
   clearTimeout(toastTimeout);
-  toastTimeout = setTimeout(() => el.classList.remove('show'), 2500);
+  if (undoFn) {
+    el.innerHTML = '';
+    const span = document.createElement('span');
+    span.textContent = msg;
+    el.appendChild(span);
+    const btn = document.createElement('button');
+    btn.className = 'toast-undo';
+    btn.type = 'button';
+    btn.textContent = 'Undo';
+    btn.onclick = () => {
+      undoFn();
+      el.classList.remove('show');
+      clearTimeout(toastTimeout);
+    };
+    el.appendChild(btn);
+  } else {
+    el.textContent = msg;
+  }
+  el.classList.add('show');
+  toastTimeout = setTimeout(() => el.classList.remove('show'), undoFn ? 5000 : 2500);
 }
 
 // ═══════════════════════════════════════════════
@@ -2146,6 +2530,8 @@ function renderMoney() {
     document.getElementById('budget-bar-wrap').style.display = 'none';
   }
 
+  renderIouSection();
+  renderRecurringBillsSection();
   renderDonut(txns);
   renderTrendBars();
   renderSavingsCard();
@@ -2163,13 +2549,22 @@ function toggleDonutMode() {
   renderDonut(txns);
 }
 
+function addExpenseToByCat(byCat, t) {
+  if (t.type !== 'expense') return;
+  if (t.splits && t.splits.length) {
+    t.splits.forEach(s => { byCat[s.cat] = (byCat[s.cat] || 0) + s.amount; });
+  } else {
+    byCat[t.cat] = (byCat[t.cat] || 0) + t.amount;
+  }
+}
+
 function renderDonut(txns) {
   const expenses = txns.filter(t => t.type === 'expense');
   const total = expenses.reduce((s,t) => s + t.amount, 0);
   document.getElementById('donut-center-val').textContent = getCurrencySymbol() + (total > 0 ? total.toFixed(0) : '0');
 
   const byCat = {};
-  expenses.forEach(t => { byCat[t.cat] = (byCat[t.cat] || 0) + t.amount; });
+  expenses.forEach(t => addExpenseToByCat(byCat, t));
   const cats = Object.entries(byCat).sort((a,b) => b[1]-a[1]); // ALL categories, no slice
 
   const svg = document.getElementById('donut-svg');
@@ -2290,7 +2685,12 @@ function renderSavingsCard() {
 
 function renderTxnList() {
   const allTxns = getTxnsForMonth(moneyViewMonth, moneyViewYear);
-  const filtered = txnFilter === 'all' ? allTxns : allTxns.filter(t => t.cat === txnFilter || (txnFilter==='income' && t.type==='income'));
+  const filtered = txnFilter === 'all' ? allTxns : allTxns.filter(t => {
+    if (txnFilter === 'income') return t.type === 'income';
+    if (t.type !== 'expense') return false;
+    if (t.splits && t.splits.length) return t.splits.some(s => s.cat === txnFilter);
+    return t.cat === txnFilter;
+  });
   const sorted = [...filtered].sort((a,b) => new Date(b.date) - new Date(a.date));
 
   const list = document.getElementById('txn-list');
@@ -2316,7 +2716,7 @@ function renderTxnList() {
       <div class="txn-icon" style="background:${meta.color}22">${meta.emoji}</div>
       <div class="txn-info">
         <div class="txn-name">${txn.desc}</div>
-        <div class="txn-meta"><span>${meta.label}</span>${txn.note?`<span>· ${txn.note}</span>`:''}</div>
+        <div class="txn-meta"><span>${meta.label}</span>${txn.splits && txn.splits.length ? '<span>· split</span>' : ''}${txn.note?`<span>· ${txn.note}</span>`:''}</div>
       </div>
       <div class="txn-amount ${txn.type==='income'?'pos':'neg'}">${txn.type==='income'?'+':'-'}${fmt(txn.amount)}</div>
     `;
@@ -2353,8 +2753,13 @@ function openAddTxn() {
   document.getElementById('txn-note-input').value = '';
   document.getElementById('delete-txn-wrap').innerHTML = '';
   document.getElementById('txn-cat-group').style.display = 'block';
+  document.getElementById('txn-split-checkbox').checked = false;
+  document.getElementById('txn-split-rows').innerHTML = '';
+  document.getElementById('txn-split-wrap').style.display = 'none';
+  document.getElementById('txn-split-toggle-wrap').style.display = 'block';
   document.getElementById('type-expense-btn').className = 'type-btn active-expense';
   document.getElementById('type-income-btn').className = 'type-btn';
+  document.getElementById('txn-amount-input').oninput = updateSplitSumHint;
   openModal('money-modal');
 }
 
@@ -2378,6 +2783,24 @@ function openEditTxn(id) {
     document.getElementById('type-income-btn').className = 'type-btn';
   }
   document.getElementById('delete-txn-wrap').innerHTML = `<button class="btn-danger" style="width:100%" onclick="deleteTxn(${id})">🗑 Delete Transaction</button>`;
+  const spl = txn.splits && txn.splits.length;
+  document.getElementById('txn-split-checkbox').checked = !!spl;
+  document.getElementById('txn-split-rows').innerHTML = '';
+  if (spl) {
+    txn.splits.forEach(s => {
+      addSplitRow();
+      const rows = document.querySelectorAll('#txn-split-rows .split-row');
+      const last = rows[rows.length - 1];
+      last.querySelector('.split-cat').value = s.cat;
+      last.querySelector('.split-amt').value = s.amount;
+    });
+    document.getElementById('txn-split-wrap').style.display = 'block';
+  } else {
+    document.getElementById('txn-split-wrap').style.display = 'none';
+  }
+  document.getElementById('txn-split-toggle-wrap').style.display = txn.type === 'expense' ? 'block' : 'none';
+  updateSplitSumHint();
+  document.getElementById('txn-amount-input').oninput = updateSplitSumHint;
   openModal('money-modal');
 }
 
@@ -2387,10 +2810,14 @@ function setTxnType(type) {
     document.getElementById('type-expense-btn').className = 'type-btn active-expense';
     document.getElementById('type-income-btn').className = 'type-btn';
     document.getElementById('txn-cat-group').style.display = 'block';
+    document.getElementById('txn-split-toggle-wrap').style.display = 'block';
   } else {
     document.getElementById('type-income-btn').className = 'type-btn active-income';
     document.getElementById('type-expense-btn').className = 'type-btn';
     document.getElementById('txn-cat-group').style.display = 'none';
+    document.getElementById('txn-split-toggle-wrap').style.display = 'none';
+    document.getElementById('txn-split-checkbox').checked = false;
+    document.getElementById('txn-split-wrap').style.display = 'none';
   }
 }
 
@@ -2399,6 +2826,20 @@ function saveTxn() {
   const desc = document.getElementById('txn-desc-input').value.trim();
   if (!amount || amount <= 0) { toast('⚠️ Enter a valid amount'); return; }
   if (!desc) { toast('⚠️ Enter a description'); return; }
+
+  const splitOn = txnType === 'expense' && document.getElementById('txn-split-checkbox').checked;
+  let splits = null;
+  if (splitOn) {
+    splits = [];
+    let sum = 0;
+    document.querySelectorAll('#txn-split-rows .split-row').forEach(row => {
+      const cat = row.querySelector('.split-cat').value;
+      const a = parseFloat(row.querySelector('.split-amt').value) || 0;
+      if (a > 0) { splits.push({ cat, amount: a }); sum += a; }
+    });
+    if (!splits.length) { toast('⚠️ Add at least one split line'); return; }
+    if (Math.abs(sum - amount) > 0.02) { toast('⚠️ Split amounts must equal the total'); return; }
+  }
 
   const txnData = {
     id: editingTxnId || Date.now(),
@@ -2409,6 +2850,8 @@ function saveTxn() {
     date: document.getElementById('txn-date-input').value || today(),
     note: document.getElementById('txn-note-input').value.trim(),
   };
+  if (splits && splits.length) txnData.splits = splits;
+  else delete txnData.splits;
 
   if (!state.transactions) state.transactions = [];
   if (editingTxnId) {
@@ -2425,13 +2868,20 @@ function saveTxn() {
 }
 
 function deleteTxn(id) {
-  if (confirm('Delete this transaction?')) {
-    state.transactions = (state.transactions||[]).filter(t=>t.id!==id);
+  if (!confirm('Delete this transaction?')) return;
+  const list = state.transactions || [];
+  const idx = list.findIndex(t => t.id === id);
+  if (idx < 0) return;
+  const snap = JSON.parse(JSON.stringify(list[idx]));
+  state.transactions = list.filter(t => t.id !== id);
+  saveState();
+  closeModal('money-modal');
+  renderMoney();
+  toast('🗑 Deleted', () => {
+    state.transactions.splice(idx, 0, snap);
     saveState();
-    closeModal('money-modal');
     renderMoney();
-    toast('🗑 Deleted');
-  }
+  });
 }
 
 function openBudgetModal() {
@@ -2601,6 +3051,7 @@ function importData(event) {
       if (!confirm('This will replace ALL current data with the backup. Continue?')) return;
       state = backup.data;
       migrateBudgetState(state);
+      migrateFeaturesState(state);
       saveState();
       init();
       showPage('today', document.querySelector('.nav-btn'));
@@ -2938,6 +3389,429 @@ function openNotesHistory() {
 
 function escapeHtml(str) {
   return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+// ═══════════════════════════════════════════════
+//  TODAY LAYOUT · HEALTH · POMODORO · IOU · BILLS · SPLITS · TEMPLATES
+// ═══════════════════════════════════════════════
+let editingIouId = null;
+let editingBillId = null;
+let pomoInterval = null;
+let pomoEndsAt = 0;
+let pomoPhase = 'idle';
+
+function applyTodayWidgetLayout() {
+  const parent = document.getElementById('page-today');
+  if (!parent) return;
+  const order = (state.settings && state.settings.todayWidgetOrder) || ['greeting','progress','health','mood','pomodoro','tasks','note'];
+  const hidden = (state.settings && state.settings.todayWidgetHidden) || {};
+  order.forEach(key => {
+    const el = document.querySelector(`[data-today-widget="${key}"]`);
+    if (!el) return;
+    el.style.display = hidden[key] ? 'none' : '';
+    parent.appendChild(el);
+  });
+}
+
+function renderHealthToday() {
+  const ds = today();
+  if (!state.healthLog) state.healthLog = {};
+  const log = state.healthLog[ds] || { water: 0, steps: '' };
+  const w = document.getElementById('health-water-val');
+  const inp = document.getElementById('health-steps-input');
+  if (w) w.textContent = String(log.water || 0);
+  if (inp && document.activeElement !== inp) inp.value = log.steps === '' || log.steps === undefined ? '' : String(log.steps);
+}
+
+function adjustHealth(field, delta) {
+  const ds = today();
+  if (!state.healthLog) state.healthLog = {};
+  if (!state.healthLog[ds]) state.healthLog[ds] = { water: 0, steps: '' };
+  if (field === 'water') {
+    state.healthLog[ds].water = Math.max(0, (state.healthLog[ds].water || 0) + delta);
+  }
+  saveState();
+  renderHealthToday();
+}
+
+function saveHealthSteps() {
+  const ds = today();
+  if (!state.healthLog) state.healthLog = {};
+  if (!state.healthLog[ds]) state.healthLog[ds] = { water: 0, steps: '' };
+  const raw = document.getElementById('health-steps-input').value;
+  state.healthLog[ds].steps = raw === '' ? '' : (parseInt(raw, 10) || 0);
+  saveState();
+}
+
+function renderPomoSessionsToday() {
+  const el = document.getElementById('pomo-sessions-today');
+  if (!el) return;
+  const d = today();
+  el.textContent = String((state.pomodoro && state.pomodoro.sessionsByDate && state.pomodoro.sessionsByDate[d]) || 0);
+}
+
+function tickPomodoro() {
+  if (pomoPhase === 'idle') return;
+  const display = document.getElementById('pomo-display');
+  const phaseEl = document.getElementById('pomo-phase');
+  const left = Math.max(0, Math.floor((pomoEndsAt - Date.now()) / 1000));
+  const m = Math.floor(left / 60);
+  const s = left % 60;
+  if (display) display.textContent = `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+  if (left > 0) return;
+  if (pomoPhase === 'focus') {
+    const d = today();
+    if (!state.pomodoro) state.pomodoro = { sessionsByDate: {} };
+    if (!state.pomodoro.sessionsByDate) state.pomodoro.sessionsByDate = {};
+    state.pomodoro.sessionsByDate[d] = (state.pomodoro.sessionsByDate[d] || 0) + 1;
+    saveState();
+    renderPomoSessionsToday();
+    toast('🍅 Focus block complete!');
+    pomoPhase = 'break';
+    pomoEndsAt = Date.now() + 5 * 60 * 1000;
+    if (phaseEl) phaseEl.textContent = 'Break (5 min)';
+    return;
+  }
+  if (pomoPhase === 'break') {
+    stopPomodoro(true);
+    toast('☕ Break over — tap a preset to go again');
+  }
+}
+
+function startPomodoro(mins) {
+  clearInterval(pomoInterval);
+  pomoInterval = null;
+  pomoPhase = 'focus';
+  pomoEndsAt = Date.now() + mins * 60 * 1000;
+  document.getElementById('pomo-stop-btn').classList.remove('hidden');
+  document.getElementById('pomo-phase').textContent = 'Focus';
+  tickPomodoro();
+}
+
+function stopPomodoro(silent) {
+  clearInterval(pomoInterval);
+  pomoInterval = null;
+  pomoPhase = 'idle';
+  const display = document.getElementById('pomo-display');
+  const phaseEl = document.getElementById('pomo-phase');
+  const stopBtn = document.getElementById('pomo-stop-btn');
+  if (display) display.textContent = '25:00';
+  if (phaseEl) phaseEl.textContent = 'Tap a preset to start';
+  if (stopBtn) stopBtn.classList.add('hidden');
+}
+
+function openTodayWidgetsModal() {
+  const keys = ['greeting','progress','health','mood','pomodoro','tasks','note'];
+  const labels = { greeting: 'Greeting & quote', progress: 'Progress ring', health: 'Water & steps', mood: 'Mood', pomodoro: 'Focus (Pomodoro)', tasks: 'Tasks list', note: 'Daily note' };
+  if (!window.__twOrder || window.__twOrder.length !== keys.length) {
+    window.__twOrder = [...((state.settings && state.settings.todayWidgetOrder) || keys)];
+  }
+  const order = window.__twOrder;
+  const hidden = { ...((state.settings && state.settings.todayWidgetHidden) || {}) };
+  const box = document.getElementById('today-widgets-editor');
+  box.innerHTML = order.map(k => `
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 0;border-bottom:1px solid var(--border)">
+      <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:13px">
+        <input type="checkbox" data-wk="${k}" ${hidden[k] ? '' : 'checked'}>
+        ${labels[k] || k}
+      </label>
+      <span style="display:flex;gap:4px">
+        <button type="button" class="btn-ghost" style="padding:4px 8px" onclick="moveWidgetOrder('${k}',-1)">↑</button>
+        <button type="button" class="btn-ghost" style="padding:4px 8px" onclick="moveWidgetOrder('${k}',1)">↓</button>
+      </span>
+    </div>
+  `).join('');
+  openModal('today-widgets-modal');
+}
+
+function moveWidgetOrder(key, dir) {
+  const order = window.__twOrder || [];
+  const i = order.indexOf(key);
+  if (i < 0) return;
+  const j = i + dir;
+  if (j < 0 || j >= order.length) return;
+  const t = order[i]; order[i] = order[j]; order[j] = t;
+  window.__twOrder = order;
+  openTodayWidgetsModal();
+}
+
+function saveTodayWidgets() {
+  state.settings = state.settings || {};
+  state.settings.todayWidgetOrder = [...(window.__twOrder || state.settings.todayWidgetOrder || [])];
+  const hidden = {};
+  document.querySelectorAll('#today-widgets-editor input[type=checkbox]').forEach(inp => {
+    if (!inp.checked) hidden[inp.dataset.wk] = true;
+  });
+  state.settings.todayWidgetHidden = hidden;
+  window.__twOrder = null;
+  saveState();
+  applyTodayWidgetLayout();
+  toast('Today screen updated');
+}
+
+function openRoutineTemplatesModal() {
+  const list = document.getElementById('routine-templates-list');
+  const tpls = state.routineTemplates || [];
+  if (!tpls.length) {
+    list.innerHTML = '<p style="font-size:13px;color:var(--muted);text-align:center;padding:16px">No templates yet. Save from today’s tasks above.</p>';
+  } else {
+    list.innerHTML = tpls.map(t => `
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:12px;margin-bottom:8px">
+        <div><div style="font-weight:600">${escapeHtml(t.name)}</div><div style="font-size:11px;color:var(--muted)">${t.tasks.length} tasks</div></div>
+        <button type="button" class="btn-primary" style="padding:8px 12px" onclick="applyRoutineTemplate(${t.id})">Apply</button>
+      </div>
+    `).join('');
+  }
+  openModal('routine-templates-modal');
+}
+
+function saveRoutineTemplateFromToday() {
+  const name = document.getElementById('routine-template-name-input').value.trim();
+  if (!name) { toast('⚠️ Enter a template name'); return; }
+  const todayTasks = getTasksForToday().map(t => ({
+    emoji: t.emoji, name: t.name, time: t.time, duration: t.duration, period: t.period, cat: t.cat,
+    repeat: t.repeat, repeatMeta: t.repeatMeta ? JSON.parse(JSON.stringify(t.repeatMeta)) : {},
+  }));
+  if (!todayTasks.length) { toast('⚠️ No tasks scheduled for today to save'); return; }
+  if (!state.routineTemplates) state.routineTemplates = [];
+  state.routineTemplates.push({ id: state.nextTemplateId++, name, tasks: todayTasks });
+  saveState();
+  toast('📋 Template saved');
+  document.getElementById('routine-template-name-input').value = '';
+  openRoutineTemplatesModal();
+}
+
+function applyRoutineTemplate(id) {
+  const tpl = (state.routineTemplates || []).find(t => t.id === id);
+  if (!tpl) return;
+  tpl.tasks.forEach(t => {
+    state.tasks.push({
+      id: state.nextTaskId++,
+      emoji: t.emoji,
+      name: t.name,
+      time: t.time,
+      duration: t.duration || 15,
+      period: t.period || 'morning',
+      cat: t.cat || 'health',
+      repeat: t.repeat || 'daily',
+      repeatMeta: t.repeatMeta || {},
+      done: false,
+      createdAt: today(),
+    });
+  });
+  saveState();
+  closeModal('routine-templates-modal');
+  renderTasks();
+  renderStats();
+  toast(`✅ Added ${tpl.tasks.length} tasks from “${tpl.name}”`);
+}
+
+function renderIouSection() {
+  const el = document.getElementById('iou-balance-list');
+  if (!el) return;
+  const rows = state.balances || [];
+  if (!rows.length) {
+    el.innerHTML = '<p style="font-size:12px;color:var(--muted)">No balances tracked yet.</p>';
+    return;
+  }
+  el.innerHTML = rows.map(b => {
+    const sign = b.dir === 'i_owe' ? '−' : '+';
+    const col = b.dir === 'i_owe' ? 'var(--danger)' : 'var(--accent3)';
+    return `<div class="balance-line">
+      <div><b>${escapeHtml(b.person)}</b><div style="font-size:11px;color:var(--muted)">${b.note ? escapeHtml(b.note) : (b.dir === 'i_owe' ? 'I owe' : 'Owes me')}</div></div>
+      <div style="color:${col};font-weight:700;cursor:pointer" onclick="openIouModal(${b.id})">${sign}${fmt(b.amount)}</div>
+    </div>`;
+  }).join('');
+}
+
+function openIouModal(id) {
+  editingIouId = id;
+  document.getElementById('iou-currency-sym').textContent = getCurrencySymbol();
+  if (id == null) {
+    document.getElementById('iou-modal-title').textContent = 'Add balance';
+    document.getElementById('iou-person-input').value = '';
+    document.getElementById('iou-dir-input').value = 'i_owe';
+    document.getElementById('iou-amount-input').value = '';
+    document.getElementById('iou-note-input').value = '';
+    document.getElementById('iou-delete-wrap').innerHTML = '';
+  } else {
+    const b = state.balances.find(x => x.id === id);
+    if (!b) return;
+    document.getElementById('iou-modal-title').textContent = 'Edit balance';
+    document.getElementById('iou-person-input').value = b.person;
+    document.getElementById('iou-dir-input').value = b.dir;
+    document.getElementById('iou-amount-input').value = b.amount;
+    document.getElementById('iou-note-input').value = b.note || '';
+    document.getElementById('iou-delete-wrap').innerHTML = `<button type="button" class="btn-danger" style="width:100%;margin-top:10px" onclick="deleteIou(${id})">Delete</button>`;
+  }
+  openModal('iou-modal');
+}
+
+function saveIou() {
+  const person = document.getElementById('iou-person-input').value.trim();
+  const amt = parseFloat(document.getElementById('iou-amount-input').value);
+  if (!person) { toast('⚠️ Enter a name'); return; }
+  if (!amt || amt <= 0) { toast('⚠️ Enter amount'); return; }
+  if (!state.balances) state.balances = [];
+  const row = {
+    id: editingIouId || Date.now(),
+    person,
+    dir: document.getElementById('iou-dir-input').value,
+    amount: amt,
+    note: document.getElementById('iou-note-input').value.trim(),
+  };
+  if (editingIouId) {
+    const i = state.balances.findIndex(x => x.id === editingIouId);
+    if (i >= 0) state.balances[i] = row;
+  } else {
+    state.balances.push(row);
+  }
+  saveState();
+  closeModal('iou-modal');
+  renderMoney();
+  toast('💳 Saved');
+}
+
+function deleteIou(id) {
+  state.balances = (state.balances || []).filter(x => x.id !== id);
+  saveState();
+  closeModal('iou-modal');
+  renderMoney();
+  toast('Deleted');
+}
+
+function renderRecurringBillsSection() {
+  const el = document.getElementById('recurring-bills-list');
+  if (!el) return;
+  const rows = state.recurringBills || [];
+  if (!rows.length) {
+    el.innerHTML = '<p style="font-size:12px;color:var(--muted)">No recurring bills yet.</p>';
+    return;
+  }
+  el.innerHTML = rows.map(b => `
+    <div class="balance-line" style="cursor:pointer" onclick="openRecurringBillModal(${b.id})">
+      <div><b>${escapeHtml(b.label)}</b><div style="font-size:11px;color:var(--muted)">Day ${b.dayOfMonth} · ${CAT_META[b.cat]?.label || b.cat}</div></div>
+      <div style="font-weight:700">${fmt(b.amount)}</div>
+    </div>
+  `).join('');
+}
+
+function openRecurringBillModal(id) {
+  editingBillId = id;
+  if (id == null) {
+    document.getElementById('recurring-bill-modal-title').textContent = 'Add recurring bill';
+    document.getElementById('bill-label-input').value = '';
+    document.getElementById('bill-amount-input').value = '';
+    document.getElementById('bill-cat-input').value = 'bills';
+    document.getElementById('bill-day-input').value = 1;
+    document.getElementById('recurring-bill-delete-wrap').innerHTML = '';
+  } else {
+    const b = state.recurringBills.find(x => x.id === id);
+    if (!b) return;
+    document.getElementById('recurring-bill-modal-title').textContent = 'Edit recurring bill';
+    document.getElementById('bill-label-input').value = b.label;
+    document.getElementById('bill-amount-input').value = b.amount;
+    document.getElementById('bill-cat-input').value = b.cat;
+    document.getElementById('bill-day-input').value = b.dayOfMonth;
+    document.getElementById('recurring-bill-delete-wrap').innerHTML = `<button type="button" class="btn-danger" style="width:100%;margin-top:10px" onclick="deleteRecurringBill(${id})">Delete</button>`;
+  }
+  openModal('recurring-bill-modal');
+}
+
+function saveRecurringBill() {
+  const label = document.getElementById('bill-label-input').value.trim();
+  const amt = parseFloat(document.getElementById('bill-amount-input').value);
+  const day = parseInt(document.getElementById('bill-day-input').value, 10);
+  if (!label) { toast('⚠️ Enter a label'); return; }
+  if (!amt || amt <= 0) { toast('⚠️ Enter amount'); return; }
+  if (!day || day < 1 || day > 28) { toast('⚠️ Use day 1–28'); return; }
+  if (!state.recurringBills) state.recurringBills = [];
+  if (editingBillId) {
+    const i = state.recurringBills.findIndex(x => x.id === editingBillId);
+    if (i >= 0) {
+      state.recurringBills[i] = {
+        id: editingBillId, label, amount: amt,
+        cat: document.getElementById('bill-cat-input').value,
+        dayOfMonth: day,
+      };
+    }
+  } else {
+    state.recurringBills.push({
+      id: state.nextBillId++,
+      label,
+      amount: amt,
+      cat: document.getElementById('bill-cat-input').value,
+      dayOfMonth: day,
+    });
+  }
+  saveState();
+  closeModal('recurring-bill-modal');
+  renderMoney();
+  toast('🔁 Saved');
+}
+
+function deleteRecurringBill(id) {
+  state.recurringBills = (state.recurringBills || []).filter(x => x.id !== id);
+  saveState();
+  closeModal('recurring-bill-modal');
+  renderMoney();
+}
+
+function postRecurringBillsForMonth() {
+  const y = moneyViewYear;
+  const m = moneyViewMonth;
+  const lastDay = new Date(y, m + 1, 0).getDate();
+  if (!state.transactions) state.transactions = [];
+  if (!state.recurringPosted) state.recurringPosted = {};
+  let n = 0;
+  (state.recurringBills || []).forEach(bill => {
+    const day = Math.min(bill.dayOfMonth, lastDay);
+    const ds = `${y}-${String(m + 1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
+    const key = `${y}-${m}-${bill.id}`;
+    if (state.recurringPosted[key]) return;
+    state.transactions.push({
+      id: Date.now() + Math.random(),
+      type: 'expense',
+      amount: bill.amount,
+      desc: bill.label + ' (recurring)',
+      cat: bill.cat,
+      date: ds,
+      note: 'recurring',
+      recurringBillId: bill.id,
+    });
+    state.recurringPosted[key] = true;
+    n++;
+  });
+  if (!n) { toast('No new bills to post for this month'); return; }
+  saveState();
+  renderMoney();
+  toast(`✅ Posted ${n} bill(s)`);
+}
+
+function toggleTxnSplitUI() {
+  const on = document.getElementById('txn-split-checkbox').checked;
+  document.getElementById('txn-split-wrap').style.display = on ? 'block' : 'none';
+  if (on && !document.getElementById('txn-split-rows').children.length) addSplitRow();
+  updateSplitSumHint();
+}
+
+function addSplitRow() {
+  const wrap = document.getElementById('txn-split-rows');
+  const row = document.createElement('div');
+  row.className = 'split-row';
+  row.innerHTML = `<select class="split-cat">${['food','transport','shopping','health','entertainment','bills','other'].map(c => `<option value="${c}">${CAT_META[c].label}</option>`).join('')}</select>
+    <input type="number" class="split-amt" min="0.01" step="0.01" placeholder="0">`;
+  wrap.appendChild(row);
+  row.querySelector('.split-amt').addEventListener('input', updateSplitSumHint);
+  updateSplitSumHint();
+}
+
+function updateSplitSumHint() {
+  const el = document.getElementById('txn-split-sum-hint');
+  const total = parseFloat(document.getElementById('txn-amount-input').value) || 0;
+  let sum = 0;
+  document.querySelectorAll('#txn-split-rows .split-amt').forEach(inp => { sum += parseFloat(inp.value) || 0; });
+  if (el) el.textContent = `Splits sum: ${fmt(sum)} · Transaction total: ${fmt(total)}` + (Math.abs(sum - total) > 0.02 ? ' — must match' : ' ✓');
 }
 
 // ═══════════════════════════════════════════════
