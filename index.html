@@ -3412,7 +3412,10 @@ function openRoutineTemplatesModal() {
     list.innerHTML = tpls.map(t => `
       <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:12px;margin-bottom:8px">
         <div><div style="font-weight:600">${escapeHtml(t.name)}</div><div style="font-size:11px;color:var(--muted)">${t.tasks.length} tasks</div></div>
-        <button type="button" class="btn-primary" style="padding:8px 12px" onclick="applyRoutineTemplate(${t.id})">Apply</button>
+        <div style="display:flex;gap:8px">
+          <button type="button" class="btn-ghost" style="padding:8px 10px;font-size:12px" onclick="deleteRoutineTemplate(${t.id})">Delete</button>
+          <button type="button" class="btn-primary" style="padding:8px 12px" onclick="applyRoutineTemplate(${t.id})">Apply</button>
+        </div>
       </div>
     `).join('');
   }
@@ -3458,6 +3461,17 @@ function applyRoutineTemplate(id) {
   renderTasks();
   renderStats();
   toast(`✅ Added ${tpl.tasks.length} tasks from “${tpl.name}”`);
+}
+
+function deleteRoutineTemplate(id) {
+  const list = state.routineTemplates || [];
+  const tpl = list.find(t => t.id === id);
+  if (!tpl) return;
+  if (!confirm(`Delete template "${tpl.name}"?`)) return;
+  state.routineTemplates = list.filter(t => t.id !== id);
+  saveState();
+  openRoutineTemplatesModal();
+  toast('🗑 Template deleted');
 }
 
 function renderIouSection() {
