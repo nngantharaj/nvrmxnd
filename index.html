@@ -369,15 +369,6 @@
   .pocket-chip { display: inline-flex; align-items: center; gap: 6px; background: rgba(106,247,200,.12); border: 1px solid rgba(106,247,200,.25); border-radius: 20px; padding: 5px 12px; margin-top: 8px; }
   .pocket-chip span { font-size: 12px; color: var(--accent3); font-weight: 600; }
 
-  /* Health quick log */
-  .health-card { margin: 12px 20px 0; background: var(--surface); border: 1px solid var(--border); border-radius: 18px; padding: 14px 16px; display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
-  .health-block { flex: 1; min-width: 120px; }
-  .health-block h4 { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); margin-bottom: 8px; }
-  .health-row { display: flex; align-items: center; gap: 8px; }
-  .health-btn { width: 32px; height: 32px; border-radius: 10px; border: 1px solid var(--border); background: var(--surface2); color: var(--text); font-size: 18px; cursor: pointer; line-height: 1; }
-  .health-val { font-family: 'Syne', sans-serif; font-size: 20px; font-weight: 800; min-width: 36px; text-align: center; }
-  .health-steps-input { width: 100%; background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; padding: 8px 10px; color: var(--text); font-size: 14px; }
-
   /* Pomodoro */
   .pomo-card { margin: 12px 20px 0; background: linear-gradient(135deg, rgba(124,106,247,.12), rgba(247,145,106,.08)); border: 1px solid rgba(124,106,247,.25); border-radius: 18px; padding: 14px 16px; }
   .pomo-card h4 { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); margin-bottom: 10px; }
@@ -404,17 +395,9 @@
   #toast { max-width: 92%; white-space: normal; text-align: left; line-height: 1.4; }
   #toast .toast-undo { margin-left: 10px; background: rgba(124,106,247,.25); border: 1px solid var(--accent); color: var(--text); border-radius: 8px; padding: 3px 10px; font-size: 11px; cursor: pointer; font-family: inherit; }
 
-  /* Split txn rows */
-  .split-row { display: flex; gap: 8px; margin-bottom: 8px; align-items: center; }
-  .split-row select { flex: 1; }
-  .split-row input { width: 90px; }
-
   /* Balances / bills */
   .balance-line { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--border); font-size: 13px; }
   .balance-line:last-child { border-bottom: none; }
-  .habit-min-btn { position: absolute; right: 8px; bottom: 8px; font-size: 10px; padding: 2px 6px; border-radius: 6px; border: 1px solid var(--border); background: var(--surface2); color: var(--muted); cursor: pointer; z-index: 2; }
-  .habit-card { position: relative; }
-  .habit-dot.min { opacity: .75; border-style: dashed; }
 </style>
 </head>
 <body>
@@ -452,24 +435,6 @@
             <div class="mini-stat"><b id="stat-left">0</b>Left</div>
             <div class="mini-stat"><b id="stat-streak">🔥0</b>Streak</div>
           </div>
-        </div>
-      </div>
-      </div>
-
-      <div data-today-widget="health" class="today-widget">
-      <div class="section-label"><div class="dot" style="background:#6af7c8"></div>Health</div>
-      <div class="health-card" id="health-card-wrap">
-        <div class="health-block">
-          <h4>Water (glasses)</h4>
-          <div class="health-row">
-            <button type="button" class="health-btn" onclick="adjustHealth('water',-1)">−</button>
-            <span class="health-val" id="health-water-val">0</span>
-            <button type="button" class="health-btn" onclick="adjustHealth('water',1)">+</button>
-          </div>
-        </div>
-        <div class="health-block">
-          <h4>Steps (approx.)</h4>
-          <input type="number" class="health-steps-input" id="health-steps-input" placeholder="0" min="0" step="100" onchange="saveHealthSteps()">
         </div>
       </div>
       </div>
@@ -955,10 +920,6 @@
         <option value="#4a6af7">Blue</option>
       </select>
     </div>
-    <div class="form-group" style="display:flex;align-items:center;justify-content:space-between;gap:12px">
-      <label style="margin:0">Allow “minimum” day (lighter check)</label>
-      <button type="button" class="toggle" id="habit-minimum-toggle" onclick="document.getElementById('habit-minimum-toggle').classList.toggle('on')"></button>
-    </div>
     <div class="btn-row">
       <button class="btn-ghost" onclick="closeModal('habit-modal')">Cancel</button>
       <button class="btn-primary" onclick="saveHabit()">Save Habit</button>
@@ -995,18 +956,6 @@
         <option value="bills">⚡ Bills & Utilities</option>
         <option value="other">📦 Other</option>
       </select>
-    </div>
-    <div class="form-group" id="txn-split-wrap" style="display:none">
-      <label>Split across categories (must sum to total)</label>
-      <div id="txn-split-rows"></div>
-      <button type="button" class="btn-ghost" style="width:100%;margin-top:6px;font-size:13px" onclick="addSplitRow()">+ Add split line</button>
-      <div id="txn-split-sum-hint" style="font-size:11px;color:var(--muted);margin-top:6px"></div>
-    </div>
-    <div class="form-group" id="txn-split-toggle-wrap">
-      <label style="display:flex;align-items:center;gap:10px;cursor:pointer">
-        <input type="checkbox" id="txn-split-checkbox" onchange="toggleTxnSplitUI()">
-        <span>Split this expense across categories</span>
-      </label>
     </div>
     <div class="form-group">
       <label>Date</label>
@@ -1306,7 +1255,6 @@ function migrateBudgetState(s) {
 }
 
 function migrateFeaturesState(s) {
-  if (!s.healthLog || typeof s.healthLog !== 'object') s.healthLog = {};
   if (!s.balances || !Array.isArray(s.balances)) s.balances = [];
   if (!s.recurringBills || !Array.isArray(s.recurringBills)) s.recurringBills = [];
   if (!s.routineTemplates || !Array.isArray(s.routineTemplates)) s.routineTemplates = [];
@@ -1317,14 +1265,14 @@ function migrateFeaturesState(s) {
   if (s.nextTemplateId == null) s.nextTemplateId = 1;
   if (!s.recurringPosted || typeof s.recurringPosted !== 'object') s.recurringPosted = {};
   s.settings = s.settings || {};
+  const todayWidgetKeys = ['greeting','progress','mood','pomodoro','tasks','note'];
   if (!s.settings.todayWidgetOrder) {
-    s.settings.todayWidgetOrder = ['greeting','progress','health','mood','pomodoro','tasks','note'];
+    s.settings.todayWidgetOrder = [...todayWidgetKeys];
+  } else {
+    const filtered = s.settings.todayWidgetOrder.filter(k => todayWidgetKeys.includes(k));
+    s.settings.todayWidgetOrder = [...new Set([...filtered, ...todayWidgetKeys])];
   }
   if (!s.settings.todayWidgetHidden || typeof s.settings.todayWidgetHidden !== 'object') s.settings.todayWidgetHidden = {};
-  (s.habits || []).forEach(h => {
-    if (!Array.isArray(h.historyMin)) h.historyMin = [];
-    if (h.allowMinimum === undefined) h.allowMinimum = false;
-  });
 }
 
 function getDefaultState() {
@@ -1352,7 +1300,7 @@ function getDefaultState() {
     lastActiveDate: '',
     settings: {
       reminders: true,
-      todayWidgetOrder: ['greeting','progress','health','mood','pomodoro','tasks','note'],
+      todayWidgetOrder: ['greeting','progress','mood','pomodoro','tasks','note'],
       todayWidgetHidden: {},
     },
     nextTaskId: 10,
@@ -1360,7 +1308,6 @@ function getDefaultState() {
     transactions: [],
     budgetsByMonth: {},
     savingsGoals: [],
-    healthLog: {},
     balances: [],
     recurringBills: [],
     routineTemplates: [],
@@ -1424,7 +1371,6 @@ function init() {
     });
   }
   applyTodayWidgetLayout();
-  renderHealthToday();
   renderPomoSessionsToday();
 }
 
@@ -1823,9 +1769,7 @@ function buildHabitCard(habit) {
   const div = document.createElement('div');
   div.className = 'habit-card pop';
   const t = today();
-  const histMin = habit.historyMin || [];
   const doneToday = habit.history.includes(t);
-  const minToday = histMin.includes(t);
 
   const weekDots = [];
   for (let i = 6; i >= 0; i--) {
@@ -1833,11 +1777,9 @@ function buildHabitCard(habit) {
     d.setDate(d.getDate() - i);
     const ds = formatDateKeyLocal(d);
     const full = habit.history.includes(ds);
-    const min = histMin.includes(ds);
     let cls = 'habit-dot';
     let st = '';
     if (full) { cls += ' done'; st = 'background:' + habit.color; }
-    else if (min) { cls += ' min'; st = 'border-color:' + habit.color + ';background:rgba(255,255,255,.06)'; }
     weekDots.push(`<div class="${cls}" style="${st}"></div>`);
   }
 
@@ -1846,10 +1788,6 @@ function buildHabitCard(habit) {
     const ago = (Date.now() - parsed.getTime()) / 86400000;
     return ago <= 7 && ago >= 0;
   }).length;
-
-  const minBtn = habit.allowMinimum
-    ? `<button type="button" class="habit-min-btn" onclick="event.stopPropagation();toggleHabitMinimum(${habit.id})">${minToday ? '✓ min' : 'min'}</button>`
-    : '';
 
   div.innerHTML = `
     <div class="habit-top">
@@ -1862,30 +1800,11 @@ function buildHabitCard(habit) {
     <div class="habit-name">${habit.name}</div>
     <div class="habit-freq">${habit.freq} · ${weekProgress}/7 this week</div>
     <div class="habit-week">${weekDots.join('')}</div>
-    ${minBtn}
   `;
-  if (doneToday || minToday) div.style.borderColor = habit.color;
-  div.style.opacity = (doneToday || minToday) ? '1' : '.85';
+  if (doneToday) div.style.borderColor = habit.color;
+  div.style.opacity = doneToday ? '1' : '.85';
   div.addEventListener('click', () => toggleHabit(habit.id));
   return div;
-}
-
-function toggleHabitMinimum(id) {
-  const habit = state.habits.find(h => h.id === id);
-  if (!habit || !habit.allowMinimum) return;
-  if (!habit.historyMin) habit.historyMin = [];
-  const d = today();
-  if (habit.historyMin.includes(d)) {
-    habit.historyMin = habit.historyMin.filter(x => x !== d);
-    toast(`↩ Minimum cleared for "${habit.name}"`);
-  } else {
-    habit.historyMin.push(d);
-    toast(`✓ Minimum logged for "${habit.name}"`);
-  }
-  saveState();
-  renderHabits();
-  renderMedals();
-  renderStats();
 }
 
 function toggleHabit(id) {
@@ -2180,8 +2099,6 @@ function openHabitModal() {
   document.getElementById('habit-name-input').value = '';
   document.getElementById('habit-freq-input').value = 'daily';
   document.getElementById('habit-color-input').value = '#7c6af7';
-  const minT = document.getElementById('habit-minimum-toggle');
-  minT.classList.remove('on');
   document.getElementById('delete-habit-wrap').innerHTML = '';
   document.querySelectorAll('#habit-emoji-picker .emoji-opt').forEach(e => e.classList.toggle('selected', e.textContent === selectedHabitEmoji));
   openModal('habit-modal');
@@ -2197,7 +2114,6 @@ function openEditHabit(id, e) {
   document.getElementById('habit-name-input').value = habit.name;
   document.getElementById('habit-freq-input').value = habit.freq;
   document.getElementById('habit-color-input').value = habit.color;
-  document.getElementById('habit-minimum-toggle').classList.toggle('on', !!habit.allowMinimum);
   document.querySelectorAll('#habit-emoji-picker .emoji-opt').forEach(e => e.classList.toggle('selected', e.textContent === selectedHabitEmoji));
   document.getElementById('delete-habit-wrap').innerHTML = `<button class="btn-danger" style="width:100%" onclick="deleteHabit(${id})">🗑 Delete Habit</button>`;
   openModal('habit-modal');
@@ -2218,7 +2134,6 @@ function saveHabit() {
   const name = document.getElementById('habit-name-input').value.trim();
   if (!name) { toast('⚠️ Please enter a habit name'); return; }
 
-  const allowMin = document.getElementById('habit-minimum-toggle').classList.contains('on');
   if (editingHabitId) {
     const habit = state.habits.find(h => h.id === editingHabitId);
     if (habit) {
@@ -2226,8 +2141,6 @@ function saveHabit() {
       habit.name = name;
       habit.freq = document.getElementById('habit-freq-input').value;
       habit.color = document.getElementById('habit-color-input').value;
-      habit.allowMinimum = allowMin;
-      if (!habit.historyMin) habit.historyMin = [];
       toast('✏️ Habit updated!');
     }
   } else {
@@ -2240,8 +2153,6 @@ function saveHabit() {
       streak: 0,
       longestStreak: 0,
       history: [],
-      historyMin: [],
-      allowMinimum: allowMin,
     });
     toast('🌱 Habit added!');
   }
@@ -2405,7 +2316,7 @@ function showPage(name, btn) {
   if (name === 'stats') renderStats();
   if (name === 'habits') { renderHabits(); renderMedals(); }
   if (name === 'money') renderMoney();
-  if (name === 'today') { applyTodayWidgetLayout(); renderHealthToday(); }
+  if (name === 'today') { applyTodayWidgetLayout(); }
 
   // Change FAB based on page
   const fab = document.getElementById('fab-btn');
@@ -2549,22 +2460,13 @@ function toggleDonutMode() {
   renderDonut(txns);
 }
 
-function addExpenseToByCat(byCat, t) {
-  if (t.type !== 'expense') return;
-  if (t.splits && t.splits.length) {
-    t.splits.forEach(s => { byCat[s.cat] = (byCat[s.cat] || 0) + s.amount; });
-  } else {
-    byCat[t.cat] = (byCat[t.cat] || 0) + t.amount;
-  }
-}
-
 function renderDonut(txns) {
   const expenses = txns.filter(t => t.type === 'expense');
   const total = expenses.reduce((s,t) => s + t.amount, 0);
   document.getElementById('donut-center-val').textContent = getCurrencySymbol() + (total > 0 ? total.toFixed(0) : '0');
 
   const byCat = {};
-  expenses.forEach(t => addExpenseToByCat(byCat, t));
+  expenses.forEach(t => { byCat[t.cat] = (byCat[t.cat] || 0) + t.amount; });
   const cats = Object.entries(byCat).sort((a,b) => b[1]-a[1]); // ALL categories, no slice
 
   const svg = document.getElementById('donut-svg');
@@ -2688,7 +2590,6 @@ function renderTxnList() {
   const filtered = txnFilter === 'all' ? allTxns : allTxns.filter(t => {
     if (txnFilter === 'income') return t.type === 'income';
     if (t.type !== 'expense') return false;
-    if (t.splits && t.splits.length) return t.splits.some(s => s.cat === txnFilter);
     return t.cat === txnFilter;
   });
   const sorted = [...filtered].sort((a,b) => new Date(b.date) - new Date(a.date));
@@ -2716,7 +2617,7 @@ function renderTxnList() {
       <div class="txn-icon" style="background:${meta.color}22">${meta.emoji}</div>
       <div class="txn-info">
         <div class="txn-name">${txn.desc}</div>
-        <div class="txn-meta"><span>${meta.label}</span>${txn.splits && txn.splits.length ? '<span>· split</span>' : ''}${txn.note?`<span>· ${txn.note}</span>`:''}</div>
+        <div class="txn-meta"><span>${meta.label}</span>${txn.note?`<span>· ${txn.note}</span>`:''}</div>
       </div>
       <div class="txn-amount ${txn.type==='income'?'pos':'neg'}">${txn.type==='income'?'+':'-'}${fmt(txn.amount)}</div>
     `;
@@ -2753,13 +2654,8 @@ function openAddTxn() {
   document.getElementById('txn-note-input').value = '';
   document.getElementById('delete-txn-wrap').innerHTML = '';
   document.getElementById('txn-cat-group').style.display = 'block';
-  document.getElementById('txn-split-checkbox').checked = false;
-  document.getElementById('txn-split-rows').innerHTML = '';
-  document.getElementById('txn-split-wrap').style.display = 'none';
-  document.getElementById('txn-split-toggle-wrap').style.display = 'block';
   document.getElementById('type-expense-btn').className = 'type-btn active-expense';
   document.getElementById('type-income-btn').className = 'type-btn';
-  document.getElementById('txn-amount-input').oninput = updateSplitSumHint;
   openModal('money-modal');
 }
 
@@ -2783,24 +2679,6 @@ function openEditTxn(id) {
     document.getElementById('type-income-btn').className = 'type-btn';
   }
   document.getElementById('delete-txn-wrap').innerHTML = `<button class="btn-danger" style="width:100%" onclick="deleteTxn(${id})">🗑 Delete Transaction</button>`;
-  const spl = txn.splits && txn.splits.length;
-  document.getElementById('txn-split-checkbox').checked = !!spl;
-  document.getElementById('txn-split-rows').innerHTML = '';
-  if (spl) {
-    txn.splits.forEach(s => {
-      addSplitRow();
-      const rows = document.querySelectorAll('#txn-split-rows .split-row');
-      const last = rows[rows.length - 1];
-      last.querySelector('.split-cat').value = s.cat;
-      last.querySelector('.split-amt').value = s.amount;
-    });
-    document.getElementById('txn-split-wrap').style.display = 'block';
-  } else {
-    document.getElementById('txn-split-wrap').style.display = 'none';
-  }
-  document.getElementById('txn-split-toggle-wrap').style.display = txn.type === 'expense' ? 'block' : 'none';
-  updateSplitSumHint();
-  document.getElementById('txn-amount-input').oninput = updateSplitSumHint;
   openModal('money-modal');
 }
 
@@ -2810,14 +2688,10 @@ function setTxnType(type) {
     document.getElementById('type-expense-btn').className = 'type-btn active-expense';
     document.getElementById('type-income-btn').className = 'type-btn';
     document.getElementById('txn-cat-group').style.display = 'block';
-    document.getElementById('txn-split-toggle-wrap').style.display = 'block';
   } else {
     document.getElementById('type-income-btn').className = 'type-btn active-income';
     document.getElementById('type-expense-btn').className = 'type-btn';
     document.getElementById('txn-cat-group').style.display = 'none';
-    document.getElementById('txn-split-toggle-wrap').style.display = 'none';
-    document.getElementById('txn-split-checkbox').checked = false;
-    document.getElementById('txn-split-wrap').style.display = 'none';
   }
 }
 
@@ -2826,20 +2700,6 @@ function saveTxn() {
   const desc = document.getElementById('txn-desc-input').value.trim();
   if (!amount || amount <= 0) { toast('⚠️ Enter a valid amount'); return; }
   if (!desc) { toast('⚠️ Enter a description'); return; }
-
-  const splitOn = txnType === 'expense' && document.getElementById('txn-split-checkbox').checked;
-  let splits = null;
-  if (splitOn) {
-    splits = [];
-    let sum = 0;
-    document.querySelectorAll('#txn-split-rows .split-row').forEach(row => {
-      const cat = row.querySelector('.split-cat').value;
-      const a = parseFloat(row.querySelector('.split-amt').value) || 0;
-      if (a > 0) { splits.push({ cat, amount: a }); sum += a; }
-    });
-    if (!splits.length) { toast('⚠️ Add at least one split line'); return; }
-    if (Math.abs(sum - amount) > 0.02) { toast('⚠️ Split amounts must equal the total'); return; }
-  }
 
   const txnData = {
     id: editingTxnId || Date.now(),
@@ -2850,8 +2710,6 @@ function saveTxn() {
     date: document.getElementById('txn-date-input').value || today(),
     note: document.getElementById('txn-note-input').value.trim(),
   };
-  if (splits && splits.length) txnData.splits = splits;
-  else delete txnData.splits;
 
   if (!state.transactions) state.transactions = [];
   if (editingTxnId) {
@@ -3392,7 +3250,7 @@ function escapeHtml(str) {
 }
 
 // ═══════════════════════════════════════════════
-//  TODAY LAYOUT · HEALTH · POMODORO · IOU · BILLS · SPLITS · TEMPLATES
+//  TODAY LAYOUT · POMODORO · IOU · BILLS · TEMPLATES
 // ═══════════════════════════════════════════════
 let editingIouId = null;
 let editingBillId = null;
@@ -3403,7 +3261,7 @@ let pomoPhase = 'idle';
 function applyTodayWidgetLayout() {
   const parent = document.getElementById('page-today');
   if (!parent) return;
-  const order = (state.settings && state.settings.todayWidgetOrder) || ['greeting','progress','health','mood','pomodoro','tasks','note'];
+  const order = (state.settings && state.settings.todayWidgetOrder) || ['greeting','progress','mood','pomodoro','tasks','note'];
   const hidden = (state.settings && state.settings.todayWidgetHidden) || {};
   order.forEach(key => {
     const el = document.querySelector(`[data-today-widget="${key}"]`);
@@ -3411,36 +3269,6 @@ function applyTodayWidgetLayout() {
     el.style.display = hidden[key] ? 'none' : '';
     parent.appendChild(el);
   });
-}
-
-function renderHealthToday() {
-  const ds = today();
-  if (!state.healthLog) state.healthLog = {};
-  const log = state.healthLog[ds] || { water: 0, steps: '' };
-  const w = document.getElementById('health-water-val');
-  const inp = document.getElementById('health-steps-input');
-  if (w) w.textContent = String(log.water || 0);
-  if (inp && document.activeElement !== inp) inp.value = log.steps === '' || log.steps === undefined ? '' : String(log.steps);
-}
-
-function adjustHealth(field, delta) {
-  const ds = today();
-  if (!state.healthLog) state.healthLog = {};
-  if (!state.healthLog[ds]) state.healthLog[ds] = { water: 0, steps: '' };
-  if (field === 'water') {
-    state.healthLog[ds].water = Math.max(0, (state.healthLog[ds].water || 0) + delta);
-  }
-  saveState();
-  renderHealthToday();
-}
-
-function saveHealthSteps() {
-  const ds = today();
-  if (!state.healthLog) state.healthLog = {};
-  if (!state.healthLog[ds]) state.healthLog[ds] = { water: 0, steps: '' };
-  const raw = document.getElementById('health-steps-input').value;
-  state.healthLog[ds].steps = raw === '' ? '' : (parseInt(raw, 10) || 0);
-  saveState();
 }
 
 function renderPomoSessionsToday() {
@@ -3501,8 +3329,8 @@ function stopPomodoro(silent) {
 }
 
 function openTodayWidgetsModal() {
-  const keys = ['greeting','progress','health','mood','pomodoro','tasks','note'];
-  const labels = { greeting: 'Greeting & quote', progress: 'Progress ring', health: 'Water & steps', mood: 'Mood', pomodoro: 'Focus (Pomodoro)', tasks: 'Tasks list', note: 'Daily note' };
+  const keys = ['greeting','progress','mood','pomodoro','tasks','note'];
+  const labels = { greeting: 'Greeting & quote', progress: 'Progress ring', mood: 'Mood', pomodoro: 'Focus (Pomodoro)', tasks: 'Tasks list', note: 'Daily note' };
   if (!window.__twOrder || window.__twOrder.length !== keys.length) {
     window.__twOrder = [...((state.settings && state.settings.todayWidgetOrder) || keys)];
   }
@@ -3786,32 +3614,6 @@ function postRecurringBillsForMonth() {
   saveState();
   renderMoney();
   toast(`✅ Posted ${n} bill(s)`);
-}
-
-function toggleTxnSplitUI() {
-  const on = document.getElementById('txn-split-checkbox').checked;
-  document.getElementById('txn-split-wrap').style.display = on ? 'block' : 'none';
-  if (on && !document.getElementById('txn-split-rows').children.length) addSplitRow();
-  updateSplitSumHint();
-}
-
-function addSplitRow() {
-  const wrap = document.getElementById('txn-split-rows');
-  const row = document.createElement('div');
-  row.className = 'split-row';
-  row.innerHTML = `<select class="split-cat">${['food','transport','shopping','health','entertainment','bills','other'].map(c => `<option value="${c}">${CAT_META[c].label}</option>`).join('')}</select>
-    <input type="number" class="split-amt" min="0.01" step="0.01" placeholder="0">`;
-  wrap.appendChild(row);
-  row.querySelector('.split-amt').addEventListener('input', updateSplitSumHint);
-  updateSplitSumHint();
-}
-
-function updateSplitSumHint() {
-  const el = document.getElementById('txn-split-sum-hint');
-  const total = parseFloat(document.getElementById('txn-amount-input').value) || 0;
-  let sum = 0;
-  document.querySelectorAll('#txn-split-rows .split-amt').forEach(inp => { sum += parseFloat(inp.value) || 0; });
-  if (el) el.textContent = `Splits sum: ${fmt(sum)} · Transaction total: ${fmt(total)}` + (Math.abs(sum - total) > 0.02 ? ' — must match' : ' ✓');
 }
 
 // ═══════════════════════════════════════════════
