@@ -72,6 +72,7 @@
   /* Section labels */
   .section-label { display: flex; align-items: center; gap: 8px; padding: 20px 20px 10px; font-size: 11px; text-transform: uppercase; letter-spacing: 1.5px; color: var(--muted); font-weight: 600; }
   .section-label .dot { width: 8px; height: 8px; border-radius: 50%; }
+  .section-label.with-action { justify-content: space-between; padding-right: 20px; }
 
   /* Task cards */
   .task-list { padding: 0 20px; display: flex; flex-direction: column; gap: 8px; }
@@ -450,7 +451,7 @@
       </div>
 
       <div data-today-widget="tasks" class="today-widget">
-      <div class="section-label" style="display:flex;align-items:center;justify-content:space-between;padding-right:20px;padding-top:8px">
+      <div class="section-label with-action">
         <div style="display:flex;align-items:center;gap:8px"><div class="dot" style="background:var(--accent)"></div>Tasks</div>
         <button type="button" class="pill-btn-upcoming" onclick="openUpcomingModal()">Upcoming (<span id="upcoming-count">0</span>)</button>
       </div>
@@ -461,7 +462,7 @@
 
       <!-- Daily note -->
       <div data-today-widget="note" class="today-widget">
-      <div class="section-label" style="display:flex;align-items:center;justify-content:space-between;padding-right:20px">
+      <div class="section-label with-action">
         <div style="display:flex;align-items:center;gap:8px"><div class="dot" style="background:var(--accent3)"></div>Daily Note</div>
         <button type="button" class="pill-btn-notes" onclick="openNotesHistory()">Past Notes</button>
       </div>
