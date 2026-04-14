@@ -369,17 +369,6 @@
   .pocket-chip { display: inline-flex; align-items: center; gap: 6px; background: rgba(106,247,200,.12); border: 1px solid rgba(106,247,200,.25); border-radius: 20px; padding: 5px 12px; margin-top: 8px; }
   .pocket-chip span { font-size: 12px; color: var(--accent3); font-weight: 600; }
 
-  /* Pomodoro */
-  .pomo-card { margin: 12px 20px 0; background: linear-gradient(135deg, rgba(124,106,247,.12), rgba(247,145,106,.08)); border: 1px solid rgba(124,106,247,.25); border-radius: 18px; padding: 14px 16px; }
-  .pomo-card h4 { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); margin-bottom: 10px; }
-  .pomo-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
-  .pomo-presets { display: flex; gap: 8px; flex-wrap: wrap; }
-  .pomo-presets button { background: var(--surface2); border: 1px solid var(--border); color: var(--text); border-radius: 10px; padding: 8px 12px; font-size: 12px; font-weight: 600; cursor: pointer; font-family: 'DM Sans', sans-serif; }
-  .pomo-presets button:active { transform: scale(.98); }
-  .pomo-display { font-family: 'Syne', sans-serif; font-size: 28px; font-weight: 800; color: var(--accent); }
-  .pomo-phase { font-size: 11px; color: var(--muted); margin-top: 4px; }
-  .pomo-stop { background: rgba(247,106,106,.15); color: var(--danger); border: none; border-radius: 10px; padding: 8px 14px; font-size: 12px; cursor: pointer; }
-
   /* Heatmap */
   .heatmap-wrap { overflow-x: auto; padding: 4px 0; }
   .heatmap-grid { display: grid; grid-template-columns: repeat(13, 1fr); gap: 3px; min-width: 260px; }
@@ -448,27 +437,6 @@
         <div class="mood-btn" data-mood="🙂" onclick="setMood(this)">🙂<span>Good</span></div>
         <div class="mood-btn" data-mood="😄" onclick="setMood(this)">😄<span>Great</span></div>
         <div class="mood-btn" data-mood="🤩" onclick="setMood(this)">🤩<span>Amazing</span></div>
-      </div>
-      </div>
-
-      <div data-today-widget="pomodoro" class="today-widget">
-      <div class="pomo-card" id="pomo-card">
-        <h4>Focus (Pomodoro)</h4>
-        <div class="pomo-row">
-          <div>
-            <div class="pomo-display" id="pomo-display">25:00</div>
-            <div class="pomo-phase" id="pomo-phase">Tap a preset to start</div>
-          </div>
-          <div class="pomo-presets">
-            <button type="button" onclick="startPomodoro(25)">25′</button>
-            <button type="button" onclick="startPomodoro(45)">45′</button>
-            <button type="button" onclick="startPomodoro(50)">50′</button>
-          </div>
-        </div>
-        <div style="margin-top:10px;display:flex;justify-content:space-between;align-items:center">
-          <span style="font-size:11px;color:var(--muted)">Sessions today: <b id="pomo-sessions-today">0</b></span>
-          <button type="button" class="pomo-stop hidden" id="pomo-stop-btn" onclick="stopPomodoro()">Stop</button>
-        </div>
       </div>
       </div>
 
@@ -553,6 +521,13 @@
             <div><div class="settings-label">Today screen</div><div class="settings-sub">Show/hide & order sections</div></div>
           </div>
           <span style="color:var(--accent);font-size:18px">›</span>
+        </div>
+        <div class="settings-item" onclick="openMoneyWidgetsModal()">
+          <div class="settings-item-left">
+            <div class="settings-icon" style="background:rgba(106,247,200,.2)">💸</div>
+            <div><div class="settings-label">Expense screen</div><div class="settings-sub">Show/hide & order sections</div></div>
+          </div>
+          <span style="color:var(--accent3);font-size:18px">›</span>
         </div>
         <div class="settings-item" onclick="openRoutineTemplatesModal()">
           <div class="settings-item-left">
@@ -640,13 +615,16 @@
 
       <!-- Month selector -->
       <div style="padding-top:52px"></div>
+      <div data-money-widget="month" class="money-widget">
       <div class="month-selector">
         <button class="month-nav" onclick="changeMonth(-1)">‹</button>
         <div class="month-label" id="money-month-label">March 2026</div>
         <button class="month-nav" onclick="changeMonth(1)">›</button>
       </div>
+      </div>
 
       <!-- Balance hero -->
+      <div data-money-widget="summary" class="money-widget">
       <div class="balance-hero">
         <div class="balance-label">Total Balance</div>
         <div class="balance-amount"><span class="currency" id="balance-currency-sym">$</span><span id="balance-val">0.00</span></div>
@@ -662,8 +640,10 @@
           </div>
         </div>
       </div>
+      </div>
 
       <!-- Budget progress -->
+      <div data-money-widget="budget" class="money-widget">
       <div class="budget-bar-card" id="budget-bar-wrap" onclick="openBudgetModal()" style="cursor:pointer">
         <div class="budget-bar-top">
           <div class="budget-bar-title" id="budget-bar-title">Budget</div>
@@ -675,15 +655,19 @@
           <span id="budget-limit-label">of $0 budget</span>
         </div>
       </div>
+      </div>
 
       <!-- IOU balances -->
+      <div data-money-widget="iou" class="money-widget">
       <div class="donut-card" style="cursor:default">
         <h3>Who owes whom</h3>
         <div id="iou-balance-list" style="margin-top:8px"></div>
         <button type="button" class="btn-primary" style="width:100%;margin-top:12px" onclick="openIouModal(null)">+ Add balance</button>
       </div>
+      </div>
 
       <!-- Recurring bills -->
+      <div data-money-widget="bills" class="money-widget">
       <div class="donut-card" style="cursor:default">
         <h3>Recurring bills</h3>
         <p style="font-size:12px;color:var(--muted);margin:8px 0">Templates for regular payments. Post them into the current month when due.</p>
@@ -691,8 +675,10 @@
         <button type="button" class="btn-ghost" style="width:100%;margin-top:8px" onclick="openRecurringBillModal(null)">+ Add recurring bill</button>
         <button type="button" class="btn-primary" style="width:100%;margin-top:8px" onclick="postRecurringBillsForMonth()">Post due bills this month</button>
       </div>
+      </div>
 
       <!-- Spending by category donut -->
+      <div data-money-widget="donut" class="money-widget">
       <div class="donut-card" onclick="toggleDonutMode()">
         <h3>Spending by Category <span id="donut-mode-hint" style="font-size:10px;color:var(--accent);text-transform:none;letter-spacing:0;margin-left:4px">tap to see amounts</span></h3>
         <div class="donut-wrap">
@@ -708,19 +694,25 @@
           <div class="donut-legend" id="donut-legend"></div>
         </div>
       </div>
+      </div>
 
       <!-- Monthly spending trend -->
+      <div data-money-widget="trend" class="money-widget">
       <div class="trend-card">
         <h3 id="trend-card-title">Monthly Spending</h3>
         <div class="trend-bars-scroll" id="trend-bars-scroll">
           <div class="trend-bars" id="trend-bars"></div>
         </div>
       </div>
+      </div>
 
       <!-- Savings goals -->
+      <div data-money-widget="savings" class="money-widget">
       <div class="savings-card" id="savings-card-wrap"></div>
+      </div>
 
       <!-- Filter pills -->
+      <div data-money-widget="transactions" class="money-widget">
       <div class="section-label"><div class="dot" style="background:var(--accent2)"></div>Transactions</div>
       <div class="filter-scroll" id="txn-filter-row">
         <div class="filter-pill active" onclick="filterTxns('all',this)">All</div>
@@ -738,6 +730,7 @@
       <div style="height:10px"></div>
       <div class="txn-list" id="txn-list"></div>
       <div style="height:20px"></div>
+      </div>
     </div>
 
   </div><!-- /screen -->
@@ -1104,6 +1097,20 @@
   </div>
 </div>
 
+<!-- Expense widgets modal -->
+<div class="modal-backdrop" id="money-widgets-modal">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <h2>Expense screen 📐</h2>
+    <p style="font-size:13px;color:var(--muted);margin-bottom:12px">Toggle sections and use ↑↓ to change order.</p>
+    <div id="money-widgets-editor"></div>
+    <div class="btn-row" style="margin-top:16px">
+      <button class="btn-ghost" onclick="closeModal('money-widgets-modal')">Close</button>
+      <button class="btn-primary" onclick="saveMoneyWidgets();closeModal('money-widgets-modal')">Save</button>
+    </div>
+  </div>
+</div>
+
 <!-- Routine templates modal -->
 <div class="modal-backdrop" id="routine-templates-modal">
   <div class="modal" style="max-height:88dvh">
@@ -1258,21 +1265,27 @@ function migrateFeaturesState(s) {
   if (!s.balances || !Array.isArray(s.balances)) s.balances = [];
   if (!s.recurringBills || !Array.isArray(s.recurringBills)) s.recurringBills = [];
   if (!s.routineTemplates || !Array.isArray(s.routineTemplates)) s.routineTemplates = [];
-  if (!s.pomodoro || typeof s.pomodoro !== 'object') s.pomodoro = { sessionsByDate: {} };
-  if (!s.pomodoro.sessionsByDate) s.pomodoro.sessionsByDate = {};
   if (!s.nextBalanceId) s.nextBalanceId = 1;
   if (s.nextBillId == null) s.nextBillId = 1;
   if (s.nextTemplateId == null) s.nextTemplateId = 1;
   if (!s.recurringPosted || typeof s.recurringPosted !== 'object') s.recurringPosted = {};
   s.settings = s.settings || {};
-  const todayWidgetKeys = ['greeting','progress','mood','pomodoro','tasks','note'];
+  const todayWidgetKeys = ['greeting','progress','mood','tasks','note'];
+  const moneyWidgetKeys = ['month','summary','budget','iou','bills','donut','trend','savings','transactions'];
   if (!s.settings.todayWidgetOrder) {
     s.settings.todayWidgetOrder = [...todayWidgetKeys];
   } else {
     const filtered = s.settings.todayWidgetOrder.filter(k => todayWidgetKeys.includes(k));
     s.settings.todayWidgetOrder = [...new Set([...filtered, ...todayWidgetKeys])];
   }
+  if (!s.settings.moneyWidgetOrder) {
+    s.settings.moneyWidgetOrder = [...moneyWidgetKeys];
+  } else {
+    const filtered = s.settings.moneyWidgetOrder.filter(k => moneyWidgetKeys.includes(k));
+    s.settings.moneyWidgetOrder = [...new Set([...filtered, ...moneyWidgetKeys])];
+  }
   if (!s.settings.todayWidgetHidden || typeof s.settings.todayWidgetHidden !== 'object') s.settings.todayWidgetHidden = {};
+  if (!s.settings.moneyWidgetHidden || typeof s.settings.moneyWidgetHidden !== 'object') s.settings.moneyWidgetHidden = {};
 }
 
 function getDefaultState() {
@@ -1300,8 +1313,10 @@ function getDefaultState() {
     lastActiveDate: '',
     settings: {
       reminders: true,
-      todayWidgetOrder: ['greeting','progress','mood','pomodoro','tasks','note'],
+      todayWidgetOrder: ['greeting','progress','mood','tasks','note'],
       todayWidgetHidden: {},
+      moneyWidgetOrder: ['month','summary','budget','iou','bills','donut','trend','savings','transactions'],
+      moneyWidgetHidden: {},
     },
     nextTaskId: 10,
     nextHabitId: 4,
@@ -1311,7 +1326,6 @@ function getDefaultState() {
     balances: [],
     recurringBills: [],
     routineTemplates: [],
-    pomodoro: { sessionsByDate: {} },
     nextBalanceId: 1,
     nextBillId: 1,
     nextTemplateId: 1,
@@ -1371,7 +1385,7 @@ function init() {
     });
   }
   applyTodayWidgetLayout();
-  renderPomoSessionsToday();
+  applyMoneyWidgetLayout();
 }
 
 function resetDailyTasksIfNeeded() {
@@ -1746,7 +1760,6 @@ function updateTimerDisplay() {
     const s = (elapsed % 60).toString().padStart(2,'0');
     document.getElementById('timer-display').textContent = `${m}:${s}`;
   }
-  tickPomodoro();
 }
 
 // ═══════════════════════════════════════════════
@@ -2315,7 +2328,7 @@ function showPage(name, btn) {
 
   if (name === 'stats') renderStats();
   if (name === 'habits') { renderHabits(); renderMedals(); }
-  if (name === 'money') renderMoney();
+  if (name === 'money') { renderMoney(); applyMoneyWidgetLayout(); }
   if (name === 'today') { applyTodayWidgetLayout(); }
 
   // Change FAB based on page
@@ -3250,18 +3263,15 @@ function escapeHtml(str) {
 }
 
 // ═══════════════════════════════════════════════
-//  TODAY LAYOUT · POMODORO · IOU · BILLS · TEMPLATES
+//  TODAY LAYOUT · EXPENSE LAYOUT · IOU · BILLS · TEMPLATES
 // ═══════════════════════════════════════════════
 let editingIouId = null;
 let editingBillId = null;
-let pomoInterval = null;
-let pomoEndsAt = 0;
-let pomoPhase = 'idle';
 
 function applyTodayWidgetLayout() {
   const parent = document.getElementById('page-today');
   if (!parent) return;
-  const order = (state.settings && state.settings.todayWidgetOrder) || ['greeting','progress','mood','pomodoro','tasks','note'];
+  const order = (state.settings && state.settings.todayWidgetOrder) || ['greeting','progress','mood','tasks','note'];
   const hidden = (state.settings && state.settings.todayWidgetHidden) || {};
   order.forEach(key => {
     const el = document.querySelector(`[data-today-widget="${key}"]`);
@@ -3271,66 +3281,22 @@ function applyTodayWidgetLayout() {
   });
 }
 
-function renderPomoSessionsToday() {
-  const el = document.getElementById('pomo-sessions-today');
-  if (!el) return;
-  const d = today();
-  el.textContent = String((state.pomodoro && state.pomodoro.sessionsByDate && state.pomodoro.sessionsByDate[d]) || 0);
-}
-
-function tickPomodoro() {
-  if (pomoPhase === 'idle') return;
-  const display = document.getElementById('pomo-display');
-  const phaseEl = document.getElementById('pomo-phase');
-  const left = Math.max(0, Math.floor((pomoEndsAt - Date.now()) / 1000));
-  const m = Math.floor(left / 60);
-  const s = left % 60;
-  if (display) display.textContent = `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
-  if (left > 0) return;
-  if (pomoPhase === 'focus') {
-    const d = today();
-    if (!state.pomodoro) state.pomodoro = { sessionsByDate: {} };
-    if (!state.pomodoro.sessionsByDate) state.pomodoro.sessionsByDate = {};
-    state.pomodoro.sessionsByDate[d] = (state.pomodoro.sessionsByDate[d] || 0) + 1;
-    saveState();
-    renderPomoSessionsToday();
-    toast('🍅 Focus block complete!');
-    pomoPhase = 'break';
-    pomoEndsAt = Date.now() + 5 * 60 * 1000;
-    if (phaseEl) phaseEl.textContent = 'Break (5 min)';
-    return;
-  }
-  if (pomoPhase === 'break') {
-    stopPomodoro(true);
-    toast('☕ Break over — tap a preset to go again');
-  }
-}
-
-function startPomodoro(mins) {
-  clearInterval(pomoInterval);
-  pomoInterval = null;
-  pomoPhase = 'focus';
-  pomoEndsAt = Date.now() + mins * 60 * 1000;
-  document.getElementById('pomo-stop-btn').classList.remove('hidden');
-  document.getElementById('pomo-phase').textContent = 'Focus';
-  tickPomodoro();
-}
-
-function stopPomodoro(silent) {
-  clearInterval(pomoInterval);
-  pomoInterval = null;
-  pomoPhase = 'idle';
-  const display = document.getElementById('pomo-display');
-  const phaseEl = document.getElementById('pomo-phase');
-  const stopBtn = document.getElementById('pomo-stop-btn');
-  if (display) display.textContent = '25:00';
-  if (phaseEl) phaseEl.textContent = 'Tap a preset to start';
-  if (stopBtn) stopBtn.classList.add('hidden');
+function applyMoneyWidgetLayout() {
+  const parent = document.getElementById('page-money');
+  if (!parent) return;
+  const order = (state.settings && state.settings.moneyWidgetOrder) || ['month','summary','budget','iou','bills','donut','trend','savings','transactions'];
+  const hidden = (state.settings && state.settings.moneyWidgetHidden) || {};
+  order.forEach(key => {
+    const el = document.querySelector(`[data-money-widget="${key}"]`);
+    if (!el) return;
+    el.style.display = hidden[key] ? 'none' : '';
+    parent.appendChild(el);
+  });
 }
 
 function openTodayWidgetsModal() {
-  const keys = ['greeting','progress','mood','pomodoro','tasks','note'];
-  const labels = { greeting: 'Greeting & quote', progress: 'Progress ring', mood: 'Mood', pomodoro: 'Focus (Pomodoro)', tasks: 'Tasks list', note: 'Daily note' };
+  const keys = ['greeting','progress','mood','tasks','note'];
+  const labels = { greeting: 'Greeting & quote', progress: 'Progress ring', mood: 'Mood', tasks: 'Tasks list', note: 'Daily note' };
   if (!window.__twOrder || window.__twOrder.length !== keys.length) {
     window.__twOrder = [...((state.settings && state.settings.todayWidgetOrder) || keys)];
   }
@@ -3344,15 +3310,15 @@ function openTodayWidgetsModal() {
         ${labels[k] || k}
       </label>
       <span style="display:flex;gap:4px">
-        <button type="button" class="btn-ghost" style="padding:4px 8px" onclick="moveWidgetOrder('${k}',-1)">↑</button>
-        <button type="button" class="btn-ghost" style="padding:4px 8px" onclick="moveWidgetOrder('${k}',1)">↓</button>
+        <button type="button" class="btn-ghost" style="padding:4px 8px" onclick="moveTodayWidgetOrder('${k}',-1)">↑</button>
+        <button type="button" class="btn-ghost" style="padding:4px 8px" onclick="moveTodayWidgetOrder('${k}',1)">↓</button>
       </span>
     </div>
   `).join('');
   openModal('today-widgets-modal');
 }
 
-function moveWidgetOrder(key, dir) {
+function moveTodayWidgetOrder(key, dir) {
   const order = window.__twOrder || [];
   const i = order.indexOf(key);
   if (i < 0) return;
@@ -3375,6 +3341,65 @@ function saveTodayWidgets() {
   saveState();
   applyTodayWidgetLayout();
   toast('Today screen updated');
+}
+
+function openMoneyWidgetsModal() {
+  const keys = ['month','summary','budget','iou','bills','donut','trend','savings','transactions'];
+  const labels = {
+    month: 'Month selector',
+    summary: 'Balance summary',
+    budget: 'Budget progress',
+    iou: 'Who owes whom',
+    bills: 'Recurring bills',
+    donut: 'Spending by category',
+    trend: 'Monthly trend',
+    savings: 'Savings goals',
+    transactions: 'Transactions section',
+  };
+  if (!window.__mwOrder || window.__mwOrder.length !== keys.length) {
+    window.__mwOrder = [...((state.settings && state.settings.moneyWidgetOrder) || keys)];
+  }
+  const order = window.__mwOrder;
+  const hidden = { ...((state.settings && state.settings.moneyWidgetHidden) || {}) };
+  const box = document.getElementById('money-widgets-editor');
+  box.innerHTML = order.map(k => `
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 0;border-bottom:1px solid var(--border)">
+      <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:13px">
+        <input type="checkbox" data-mwk="${k}" ${hidden[k] ? '' : 'checked'}>
+        ${labels[k] || k}
+      </label>
+      <span style="display:flex;gap:4px">
+        <button type="button" class="btn-ghost" style="padding:4px 8px" onclick="moveMoneyWidgetOrder('${k}',-1)">↑</button>
+        <button type="button" class="btn-ghost" style="padding:4px 8px" onclick="moveMoneyWidgetOrder('${k}',1)">↓</button>
+      </span>
+    </div>
+  `).join('');
+  openModal('money-widgets-modal');
+}
+
+function moveMoneyWidgetOrder(key, dir) {
+  const order = window.__mwOrder || [];
+  const i = order.indexOf(key);
+  if (i < 0) return;
+  const j = i + dir;
+  if (j < 0 || j >= order.length) return;
+  const t = order[i]; order[i] = order[j]; order[j] = t;
+  window.__mwOrder = order;
+  openMoneyWidgetsModal();
+}
+
+function saveMoneyWidgets() {
+  state.settings = state.settings || {};
+  state.settings.moneyWidgetOrder = [...(window.__mwOrder || state.settings.moneyWidgetOrder || [])];
+  const hidden = {};
+  document.querySelectorAll('#money-widgets-editor input[type=checkbox]').forEach(inp => {
+    if (!inp.checked) hidden[inp.dataset.mwk] = true;
+  });
+  state.settings.moneyWidgetHidden = hidden;
+  window.__mwOrder = null;
+  saveState();
+  applyMoneyWidgetLayout();
+  toast('Expense screen updated');
 }
 
 function openRoutineTemplatesModal() {
