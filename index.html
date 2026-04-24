@@ -399,23 +399,47 @@
     border-color: var(--accent);
     box-shadow: inset 0 1px 0 rgba(255,255,255,.04), 0 0 0 2px rgba(124,106,247,.18), 0 5px 14px rgba(0,0,0,.28);
   }
-  .search-dropdown-wrap { position: relative; }
+  /* Search modal: sheet at bottom + results panel floating above it */
+  #search-modal.modal-backdrop {
+    flex-direction: column;
+    justify-content: flex-end;
+    align-items: stretch;
+  }
+  .search-dropdown-float-host {
+    flex: 1 1 auto;
+    min-height: 0;
+    width: 100%;
+    max-width: 430px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    align-items: stretch;
+    padding: 8px 12px 10px;
+    pointer-events: none;
+  }
+  .search-dropdown-float-host .search-dropdown.show { pointer-events: auto; }
+  #search-modal > .search-dropdown-float-host { position: relative; z-index: 2; }
+  #search-modal > .modal { position: relative; z-index: 1; flex-shrink: 0; }
   .search-dropdown {
-    position: absolute;
-    top: calc(100% - 4px);
-    left: 0;
-    right: 0;
-    z-index: 20;
+    width: 100%;
     background: linear-gradient(180deg, rgba(22,24,31,.98), rgba(18,20,27,.98));
     border: 1px solid rgba(124,106,247,.24);
-    border-radius: 14px;
+    border-radius: 16px;
     box-shadow: 0 12px 32px rgba(0,0,0,.35);
     padding: 8px;
     max-height: min(44dvh, 320px);
     overflow-y: auto;
     display: none;
+    -webkit-overflow-scrolling: touch;
   }
   .search-dropdown.show { display: block; }
+  .search-modal-hint {
+    font-size: 12px;
+    color: var(--muted);
+    margin: -4px 0 12px;
+    line-height: 1.45;
+  }
   .search-group-label {
     font-size: 11px;
     color: var(--accent);
@@ -1115,13 +1139,14 @@
 </div>
 
 <div class="modal-backdrop" id="search-modal">
+  <div class="search-dropdown-float-host">
+    <div id="global-search-results" class="search-dropdown"></div>
+  </div>
   <div class="modal" style="max-height:85dvh">
     <div class="modal-handle"></div>
     <h2>Search</h2>
-    <div class="search-dropdown-wrap">
-      <input type="text" id="global-search-input" class="search-input" placeholder="Search tasks, habits, transactions..." oninput="renderGlobalSearchResults()">
-      <div id="global-search-results" class="search-dropdown"></div>
-    </div>
+    <input type="text" id="global-search-input" class="search-input" placeholder="Search tasks, habits, transactions..." oninput="renderGlobalSearchResults()">
+    <p id="search-modal-hint" class="search-modal-hint">Type to search tasks, habits, and transactions.</p>
     <div class="modal-btns" style="margin-top:8px">
       <button class="btn-ghost" onclick="closeModal('search-modal')">Close</button>
     </div>
@@ -2317,7 +2342,7 @@ document.querySelectorAll('.modal-backdrop').forEach(backdrop => {
 
   // Block touchmove on backdrop (not modal) to prevent bg scroll
   backdrop.addEventListener('touchmove', function(e) {
-    if (!e.target.closest('.modal')) {
+    if (!e.target.closest('.modal') && !e.target.closest('.search-dropdown-float-host')) {
       e.preventDefault();
       e.stopPropagation();
     }
@@ -2479,12 +2504,15 @@ function renderGlobalSearchResults() {
   const q = ((input ? input.value : globalSearchTerm) || '').trim().toLowerCase();
   globalSearchTerm = q;
   const box = document.getElementById('global-search-results');
+  const hint = document.getElementById('search-modal-hint');
   if (!box) return;
   if (!q) {
     box.classList.remove('show');
-    box.innerHTML = '<div class="search-empty">Type to search tasks, habits, and transactions.</div>';
+    box.innerHTML = '';
+    if (hint) hint.style.display = '';
     return;
   }
+  if (hint) hint.style.display = 'none';
   const taskMatches = (state.tasks || []).filter(t => [t.name, t.cat, t.time].join(' ').toLowerCase().includes(q)).slice(0, 6);
   const habitMatches = (state.habits || []).filter(h => [h.name, h.freq].join(' ').toLowerCase().includes(q)).slice(0, 6);
   const txnMatches = (state.transactions || []).filter(t => [t.desc, t.cat, t.note, t.date].join(' ').toLowerCase().includes(q)).slice(0, 10);
