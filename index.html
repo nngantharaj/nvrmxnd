@@ -508,20 +508,6 @@
           </div>
           <button class="toggle" id="toggle-reminders" onclick="toggleSetting(this,'reminders')"></button>
         </div>
-        <div class="settings-item" onclick="toggleDarkMode()">
-          <div class="settings-item-left">
-            <div class="settings-icon" style="background:rgba(124,106,247,.15)">🌙</div>
-            <div><div class="settings-label">Dark Mode</div><div class="settings-sub" id="dark-mode-sub">Currently: Dark</div></div>
-          </div>
-          <button class="toggle on" id="toggle-dark"></button>
-        </div>
-        <div class="settings-item" onclick="toggleWeekStart()">
-          <div class="settings-item-left">
-            <div class="settings-icon" style="background:rgba(124,106,247,.15)">🗓️</div>
-            <div><div class="settings-label">First Day of Week</div><div class="settings-sub" id="week-start-sub">Monday</div></div>
-          </div>
-          <span style="color:var(--accent);font-size:18px">›</span>
-        </div>
         <div class="settings-item" onclick="openTodayWidgetsModal()">
           <div class="settings-item-left">
             <div class="settings-icon" style="background:rgba(124,106,247,.15)">📐</div>
@@ -1262,7 +1248,6 @@ function migrateFeaturesState(s) {
   }
   if (!s.settings.todayWidgetHidden || typeof s.settings.todayWidgetHidden !== 'object') s.settings.todayWidgetHidden = {};
   if (!s.settings.moneyWidgetHidden || typeof s.settings.moneyWidgetHidden !== 'object') s.settings.moneyWidgetHidden = {};
-  if (!['monday', 'sunday'].includes(s.settings.weekStart)) s.settings.weekStart = 'monday';
   if (!['manual', 'auto'].includes(s.settings.recurringBillMode)) s.settings.recurringBillMode = 'manual';
   if (typeof s.settings.weatherCity !== 'string') s.settings.weatherCity = 'Singapore';
   if (Array.isArray(s.tasks)) {
@@ -1297,7 +1282,6 @@ function getDefaultState() {
     lastActiveDate: '',
     settings: {
       reminders: true,
-      weekStart: 'monday',
       recurringBillMode: 'manual',
       weatherCity: 'Singapore',
       todayWidgetOrder: ['greeting','weather','progress','mood','tasks','note'],
@@ -1360,7 +1344,6 @@ function init() {
   loadSettings();
   updateStreak();
   updateLastBackupLabel();
-  applyDarkMode();
   updateCurrencySub();
   if (!appShellBound) {
     appShellBound = true;
@@ -1930,21 +1913,15 @@ function renderStats() {
   // 7-day mood trend — respects week start setting
   const moodEmojis = ['😔','😐','🙂','😄','🤩'];
   const moodColors = ['#f76a6a','#f7916a','#f7d46a','#6af7c8','#7c6af7'];
-  const startsSunday = (state.settings && state.settings.weekStart) === 'sunday';
-  const dayNames = startsSunday ? ['Su','Mo','Tu','We','Th','Fr','Sa'] : ['Mo','Tu','We','Th','Fr','Sa','Su'];
+  const dayNames = ['Mo','Tu','We','Th','Fr','Sa','Su'];
   const moodBars = [];
 
-  // Build last 7 days starting from most-recent Monday
-  const todayDate = new Date();
-  const todayDow = todayDate.getDay(); // 0=Sun
-  // Days offset so week starts Mon: Sun becomes 6, Mon becomes 0
-  const daysFromMon = (todayDow + 6) % 7; // how many days since last Monday
   for (let i = 6; i >= 0; i--) {
     const d = new Date();
     d.setDate(d.getDate() - i);
     const ds = formatDateKeyLocal(d);
     const dow = d.getDay();
-    const dayIdx = startsSunday ? dow : (dow + 6) % 7;
+    const dayIdx = (dow + 6) % 7;
     const label = dayNames[dayIdx];
     const moodVal = state.mood[ds] ? moodEmojis.indexOf(state.mood[ds]) + 1 : 0;
     const isToday = (i === 0);
@@ -2027,25 +2004,7 @@ function buildCompletionHeatmapHtml() {
 //  SETTINGS
 // ═══════════════════════════════════════════════
 function loadSettings() {
-  applyDarkMode();
   updateCurrencySub();
-  updateWeekStartSub();
-}
-
-function toggleWeekStart() {
-  state.settings = state.settings || {};
-  state.settings.weekStart = (state.settings.weekStart === 'sunday') ? 'monday' : 'sunday';
-  saveState();
-  updateWeekStartSub();
-  renderStats();
-  toast(`🗓 Week starts on ${state.settings.weekStart === 'sunday' ? 'Sunday' : 'Monday'}`);
-}
-
-function updateWeekStartSub() {
-  const sub = document.getElementById('week-start-sub');
-  if (!sub) return;
-  const weekStart = (state.settings && state.settings.weekStart) === 'sunday' ? 'Sunday' : 'Monday';
-  sub.textContent = weekStart;
 }
 
 function toggleSetting(btn, key) {
@@ -3072,50 +3031,6 @@ function updateLastBackupLabel() {
 }
 
 // ═══════════════════════════════════════════════
-//  DARK MODE
-// ═══════════════════════════════════════════════
-function toggleDarkMode() {
-  const isDark = document.documentElement.style.getPropertyValue('--bg') !== '#f5f5f7';
-  if (isDark) {
-    document.documentElement.style.setProperty('--bg', '#f5f5f7');
-    document.documentElement.style.setProperty('--surface', '#ffffff');
-    document.documentElement.style.setProperty('--surface2', '#efefef');
-    document.documentElement.style.setProperty('--border', '#e0e0e8');
-    document.documentElement.style.setProperty('--text', '#1a1a2e');
-    document.documentElement.style.setProperty('--muted', '#888899');
-    document.getElementById('toggle-dark').classList.remove('on');
-    document.getElementById('dark-mode-sub').textContent = 'Currently: Light';
-    state.settings.darkMode = false;
-  } else {
-    document.documentElement.style.setProperty('--bg', '#0e0f14');
-    document.documentElement.style.setProperty('--surface', '#16181f');
-    document.documentElement.style.setProperty('--surface2', '#1e2029');
-    document.documentElement.style.setProperty('--border', '#2a2d38');
-    document.documentElement.style.setProperty('--text', '#f0f0f5');
-    document.documentElement.style.setProperty('--muted', '#8888a0');
-    document.getElementById('toggle-dark').classList.add('on');
-    document.getElementById('dark-mode-sub').textContent = 'Currently: Dark';
-    state.settings.darkMode = true;
-  }
-  saveState();
-}
-
-function applyDarkMode() {
-  if (state.settings && state.settings.darkMode === false) {
-    document.documentElement.style.setProperty('--bg', '#f5f5f7');
-    document.documentElement.style.setProperty('--surface', '#ffffff');
-    document.documentElement.style.setProperty('--surface2', '#efefef');
-    document.documentElement.style.setProperty('--border', '#e0e0e8');
-    document.documentElement.style.setProperty('--text', '#1a1a2e');
-    document.documentElement.style.setProperty('--muted', '#888899');
-    const btn = document.getElementById('toggle-dark');
-    if (btn) btn.classList.remove('on');
-    const sub = document.getElementById('dark-mode-sub');
-    if (sub) sub.textContent = 'Currently: Light';
-  }
-}
-
-// ═══════════════════════════════════════════════
 //  CURRENCY
 // ═══════════════════════════════════════════════
 const CURRENCIES = [
@@ -3614,10 +3529,9 @@ function updateRecurringModeSub() {
 }
 
 function startOfWeekDate(baseDate) {
-  const startsSunday = (state.settings && state.settings.weekStart) === 'sunday';
   const d = new Date(baseDate);
   const dow = d.getDay();
-  const shift = startsSunday ? dow : (dow + 6) % 7;
+  const shift = (dow + 6) % 7;
   d.setDate(d.getDate() - shift);
   d.setHours(0, 0, 0, 0);
   return d;
@@ -3631,9 +3545,8 @@ function renderHabitMonthlyCalendar() {
   const m = now.getMonth();
   const daysInMonth = new Date(y, m + 1, 0).getDate();
   const firstDow = new Date(y, m, 1).getDay();
-  const startsSunday = (state.settings && state.settings.weekStart) === 'sunday';
-  const leading = startsSunday ? firstDow : (firstDow + 6) % 7;
-  const dayLabels = startsSunday ? ['Su','Mo','Tu','We','Th','Fr','Sa'] : ['Mo','Tu','We','Th','Fr','Sa','Su'];
+  const leading = (firstDow + 6) % 7;
+  const dayLabels = ['Mo','Tu','We','Th','Fr','Sa','Su'];
   const cellHtml = [];
   for (let i = 0; i < leading; i++) cellHtml.push('<div></div>');
   for (let day = 1; day <= daysInMonth; day++) {
