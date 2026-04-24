@@ -2636,7 +2636,7 @@ function renderTrendBars() {
     const isToday = d.dateStr === todayStr;
     const isFuture = isCurrentMonth && d.date > todayDate;
     const h = Math.max(4, Math.round(d.amt / max * 56));
-    const color = d.amt === 0 ? 'var(--muted)' : (isToday ? 'var(--accent2)' : 'var(--accent)');
+    const color = isToday ? 'var(--accent2)' : (d.amt === 0 ? 'var(--muted)' : 'var(--accent)');
     const opacity = isFuture ? 0.2 : (isToday ? 1 : 0.6);
     bars.innerHTML += `<div class="trend-bar-wrap" onclick="showDayDetail('${d.dateStr}')">
       <div class="trend-bar" style="height:${h}px;background:${color};opacity:${opacity}"></div>
