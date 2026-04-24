@@ -379,6 +379,26 @@
   /* Balances / bills */
   .balance-line { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--border); font-size: 13px; }
   .balance-line:last-child { border-bottom: none; }
+  .search-input {
+    width: 100%;
+    height: 42px;
+    background: linear-gradient(180deg, rgba(30,32,41,.96), rgba(25,27,35,.98));
+    border: 1px solid rgba(124,106,247,.2);
+    border-radius: 12px;
+    padding: 0 14px;
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    outline: none;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.03), 0 3px 10px rgba(0,0,0,.2);
+    transition: border-color .2s, box-shadow .2s;
+    margin-bottom: 12px;
+  }
+  .search-input::placeholder { color: var(--muted); opacity: .85; }
+  .search-input:focus {
+    border-color: var(--accent);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.04), 0 0 0 2px rgba(124,106,247,.18), 0 5px 14px rgba(0,0,0,.28);
+  }
 </style>
 </head>
 <body>
@@ -1050,7 +1070,7 @@
   <div class="modal" style="max-height:85dvh;display:flex;flex-direction:column">
     <div class="modal-handle"></div>
     <h2>Search</h2>
-    <input type="text" id="global-search-input" placeholder="Search tasks, habits, transactions..." oninput="renderGlobalSearchResults()" style="margin-bottom:12px">
+    <input type="text" id="global-search-input" class="search-input" placeholder="Search tasks, habits, transactions..." oninput="renderGlobalSearchResults()">
     <div id="global-search-results" style="overflow-y:auto;flex:1;display:flex;flex-direction:column;gap:8px"></div>
     <div class="modal-btns">
       <button class="btn-ghost" onclick="closeModal('search-modal')">Close</button>
