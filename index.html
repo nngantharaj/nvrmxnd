@@ -74,30 +74,6 @@
   .section-label .dot { width: 8px; height: 8px; border-radius: 50%; }
   .section-label.with-action { justify-content: space-between; padding-right: 20px; }
 
-  /* Routine template delete — matches app surfaces + muted/danger affordance */
-  .btn-delete-template {
-    flex-shrink: 0;
-    width: 40px;
-    height: 40px;
-    padding: 0;
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    cursor: pointer;
-    background: var(--surface);
-    color: var(--muted);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: color .15s ease, background .15s ease, border-color .15s ease, transform .1s ease;
-  }
-  .btn-delete-template svg { flex-shrink: 0; }
-  .btn-delete-template:active {
-    transform: scale(0.96);
-    color: var(--danger);
-    background: rgba(247, 106, 106, 0.1);
-    border-color: rgba(247, 106, 106, 0.35);
-  }
-
   /* Task cards */
   .task-list { padding: 0 20px; display: flex; flex-direction: column; gap: 8px; }
   .task-card { display: flex; align-items: center; gap: 12px; background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 14px 16px; cursor: pointer; transition: all .2s; position: relative; overflow: hidden; }
@@ -124,8 +100,6 @@
 
   .task-emoji { font-size: 20px; width: 32px; text-align: center; flex-shrink: 0; }
 
-  /* Timer badge */
-  .timer-badge { background: var(--surface2); border-radius: 10px; padding: 4px 10px; font-size: 11px; font-family: 'Syne', sans-serif; font-weight: 700; color: var(--accent); white-space: nowrap; }
 
   /* Quick Add */
   .fab { position: fixed; right: 0; top: 50%; width: 44px; height: 56px; border-radius: 16px 0 0 16px; background: var(--accent); border: none; color: white; font-size: 26px; cursor: grab; display: flex; align-items: center; justify-content: center; box-shadow: -3px 0 18px rgba(124,106,247,.45); transition: width .15s; z-index: 50; touch-action: none; user-select: none; }
@@ -211,13 +185,7 @@
   /* Swipe hint */
   .swipe-hint { text-align: center; font-size: 11px; color: var(--muted); padding: 8px; }
 
-  /* Timer active */
-  .timer-active-bar { margin: 10px 20px 0; background: linear-gradient(135deg, rgba(124,106,247,.15), rgba(106,247,200,.1)); border: 1px solid rgba(124,106,247,.3); border-radius: 16px; padding: 12px 16px; display: flex; align-items: center; justify-content: space-between; }
-  .timer-active-bar.hidden { display: none; }
   .hidden { display: none !important; }
-  .timer-label { font-size: 12px; color: var(--muted); }
-  .timer-count { font-family: 'Syne', sans-serif; font-size: 20px; font-weight: 800; color: var(--accent); }
-  .timer-stop { background: rgba(247,106,106,.15); color: var(--danger); border: none; border-radius: 8px; padding: 6px 12px; font-size: 12px; cursor: pointer; }
 
   /* Medals */
   .medals-row { display: flex; gap: 8px; padding: 0 20px; flex-wrap: wrap; }
@@ -474,15 +442,6 @@
       </div>
       </div>
 
-      <!-- Active timer -->
-      <div class="timer-active-bar hidden" id="active-timer-bar">
-        <div>
-          <div class="timer-label" id="timer-task-name">Task running…</div>
-          <div class="timer-count" id="timer-display">00:00</div>
-        </div>
-        <button class="timer-stop" onclick="stopTimer()">✓ Done</button>
-      </div>
-
       <div data-today-widget="tasks" class="today-widget">
       <div class="section-label with-action">
         <div style="display:flex;align-items:center;gap:8px"><div class="dot" style="background:var(--accent)"></div>Tasks <span id="task-counter-badge" style="font-size:11px;background:var(--surface2);padding:2px 8px;border-radius:999px;color:var(--muted)">0/0</span></div>
@@ -514,17 +473,6 @@
         <h1>Habits 🌱</h1>
         <p>Build consistency, one day at a time</p>
       </div>
-      <div class="today-widget">
-        <div class="section-label with-action">
-          <div style="display:flex;align-items:center;gap:8px"><div class="dot" style="background:var(--accent4)"></div>Weekly Target</div>
-          <div style="display:flex;align-items:center;gap:8px">
-            <button type="button" class="pill-btn-upcoming" onclick="adjustHabitWeeklyTarget(-1)">-</button>
-            <span id="habit-weekly-target-label" style="font-size:12px;color:var(--muted)">5 / week</span>
-            <button type="button" class="pill-btn-upcoming" onclick="adjustHabitWeeklyTarget(1)">+</button>
-          </div>
-        </div>
-        <div class="donut-card" id="habit-weekly-target-card"></div>
-      </div>
       <div class="medals-row" id="medals-row"></div>
       <div class="section-label"><div class="dot" style="background:var(--accent)"></div>Your Habits</div>
       <div class="habit-grid" id="habit-grid"></div>
@@ -540,9 +488,6 @@
         <h1>Stats 📊</h1>
         <p>Your progress at a glance</p>
       </div>
-      <div class="today-widget"><div class="donut-card" id="monthly-summary-card"></div></div>
-      <div class="today-widget"><div class="donut-card" id="personal-bests-card"></div></div>
-      <div class="today-widget"><div class="donut-card" id="habit-stats-card"></div></div>
       <div class="stats-grid" id="stats-grid"></div>
     </div>
 
@@ -565,62 +510,41 @@
         </div>
         <div class="settings-item" onclick="toggleDarkMode()">
           <div class="settings-item-left">
-            <div class="settings-icon" style="background:rgba(106,247,200,.15)">🌙</div>
+            <div class="settings-icon" style="background:rgba(124,106,247,.15)">🌙</div>
             <div><div class="settings-label">Dark Mode</div><div class="settings-sub" id="dark-mode-sub">Currently: Dark</div></div>
           </div>
           <button class="toggle on" id="toggle-dark"></button>
         </div>
-        <div class="settings-item" onclick="openNameModal()">
+        <div class="settings-item" onclick="toggleWeekStart()">
           <div class="settings-item-left">
-            <div class="settings-icon" style="background:rgba(124,106,247,.15)">👤</div>
-            <div><div class="settings-label">Your Name</div><div class="settings-sub" id="display-name-sub">Tap to set your name</div></div>
+            <div class="settings-icon" style="background:rgba(124,106,247,.15)">🗓️</div>
+            <div><div class="settings-label">First Day of Week</div><div class="settings-sub" id="week-start-sub">Monday</div></div>
           </div>
           <span style="color:var(--accent);font-size:18px">›</span>
         </div>
-        <div class="settings-item" onclick="toggleWeekStart()">
-          <div class="settings-item-left">
-            <div class="settings-icon" style="background:rgba(247,212,106,.15)">🗓️</div>
-            <div><div class="settings-label">First Day of Week</div><div class="settings-sub" id="week-start-sub">Monday</div></div>
-          </div>
-          <span style="color:var(--accent4);font-size:18px">›</span>
-        </div>
         <div class="settings-item" onclick="openTodayWidgetsModal()">
           <div class="settings-item-left">
-            <div class="settings-icon" style="background:rgba(124,106,247,.2)">📐</div>
+            <div class="settings-icon" style="background:rgba(124,106,247,.15)">📐</div>
             <div><div class="settings-label">Today screen</div><div class="settings-sub">Show/hide & order sections</div></div>
           </div>
           <span style="color:var(--accent);font-size:18px">›</span>
         </div>
         <div class="settings-item" onclick="openMoneyWidgetsModal()">
           <div class="settings-item-left">
-            <div class="settings-icon" style="background:rgba(106,247,200,.2)">💸</div>
+            <div class="settings-icon" style="background:rgba(124,106,247,.15)">💸</div>
             <div><div class="settings-label">Expense screen</div><div class="settings-sub">Show/hide & order sections</div></div>
           </div>
-          <span style="color:var(--accent3);font-size:18px">›</span>
-        </div>
-        <div class="settings-item" onclick="openRoutineTemplatesModal()">
-          <div class="settings-item-left">
-            <div class="settings-icon" style="background:rgba(247,145,106,.15)">📋</div>
-            <div><div class="settings-label">Routine templates</div><div class="settings-sub">Save & apply task sets</div></div>
-          </div>
-          <span style="color:var(--accent2);font-size:18px">›</span>
-        </div>
-        <div class="settings-item" onclick="openGoalModal()">
-          <div class="settings-item-left">
-            <div class="settings-icon" style="background:rgba(247,212,106,.15)">🎯</div>
-            <div><div class="settings-label">Daily Goal</div><div class="settings-sub" id="goal-sub">Tap to set your daily task goal</div></div>
-          </div>
-          <span style="color:var(--accent4);font-size:18px">›</span>
+          <span style="color:var(--accent);font-size:18px">›</span>
         </div>
         <div class="settings-item" onclick="openCurrencyModal()">
           <div class="settings-item-left">
-            <div class="settings-icon" style="background:rgba(106,247,200,.15)">💱</div>
+            <div class="settings-icon" style="background:rgba(124,106,247,.15)">💱</div>
             <div>
               <div class="settings-label">Currency</div>
               <div class="settings-sub" id="currency-sub">US Dollar ($)</div>
             </div>
           </div>
-          <span style="color:var(--accent3);font-size:18px">›</span>
+          <span style="color:var(--accent);font-size:18px">›</span>
         </div>
         <!-- BACKUP SECTION -->
         <div style="padding:4px 0 6px">
@@ -630,13 +554,13 @@
         <!-- Export -->
         <div class="settings-item" onclick="exportData()">
           <div class="settings-item-left">
-            <div class="settings-icon" style="background:rgba(106,247,200,.15)">📤</div>
+            <div class="settings-icon" style="background:rgba(124,106,247,.15)">📤</div>
             <div>
               <div class="settings-label">Export Backup</div>
               <div class="settings-sub">Save data as a file to Files app</div>
             </div>
           </div>
-          <span style="color:var(--accent3);font-size:18px">›</span>
+          <span style="color:var(--accent);font-size:18px">›</span>
         </div>
 
         <!-- Import -->
@@ -668,10 +592,10 @@
 
         <div class="settings-item" onclick="clearData()">
           <div class="settings-item-left">
-            <div class="settings-icon" style="background:rgba(247,106,106,.15)">🗑️</div>
+            <div class="settings-icon" style="background:rgba(124,106,247,.15)">🗑️</div>
             <div><div class="settings-label" style="color:var(--danger)">Reset All Data</div><div class="settings-sub">Cannot be undone</div></div>
           </div>
-          <span style="color:var(--muted);font-size:18px">›</span>
+          <span style="color:var(--accent);font-size:18px">›</span>
         </div>
         <div style="text-align:center;padding:20px;color:var(--muted);font-size:12px">
           DayFlow v1.0 · Your data is stored locally on this device 🔒
@@ -775,19 +699,6 @@
         <h3 id="trend-card-title">Monthly Spending</h3>
         <div class="trend-bars-scroll" id="trend-bars-scroll">
           <div class="trend-bars" id="trend-bars"></div>
-        </div>
-      </div>
-      </div>
-
-      <div data-money-widget="mom" class="money-widget">
-      <div class="donut-card" id="mom-card-wrap"></div>
-      </div>
-
-      <div data-money-widget="incomeTrend" class="money-widget">
-      <div class="trend-card">
-        <h3>Income Trend (last 6 months)</h3>
-        <div class="trend-bars-scroll" id="income-trend-scroll">
-          <div class="trend-bars" id="income-trend-bars"></div>
         </div>
       </div>
       </div>
@@ -1108,32 +1019,6 @@
   </div>
 </div>
 
-<!-- Daily Goal Modal -->
-<div class="modal-backdrop" id="goal-modal">
-  <div class="modal">
-    <div class="modal-handle"></div>
-    <h2>Set Daily Goal 🎯</h2>
-    <p style="font-size:13px;color:var(--muted);margin-bottom:16px">Set a motivational goal that appears on your Today screen.</p>
-    <div class="form-group">
-      <label>Your Goal</label>
-      <input type="text" id="goal-input" placeholder="e.g. Be productive and healthy today!" maxlength="60">
-    </div>
-    <div class="form-group">
-      <label>Minimum Tasks to Complete</label>
-      <select id="goal-tasks-input">
-        <option value="0">No minimum — just do your best</option>
-        <option value="3">At least 3 tasks</option>
-        <option value="5">At least 5 tasks</option>
-        <option value="all">All tasks</option>
-      </select>
-    </div>
-    <div class="btn-row">
-      <button class="btn-ghost" onclick="closeModal('goal-modal')">Cancel</button>
-      <button class="btn-primary" onclick="saveGoal()">Save Goal</button>
-    </div>
-  </div>
-</div>
-
 <!-- Currency Modal -->
 <div class="modal-backdrop" id="currency-modal">
   <div class="modal">
@@ -1175,20 +1060,6 @@
   </div>
 </div>
 
-<div class="modal-backdrop" id="name-modal">
-  <div class="modal">
-    <div class="modal-handle"></div>
-    <h2>Your Name</h2>
-    <p style="font-size:13px;color:var(--muted);margin-bottom:12px">We use this in your greeting.</p>
-    <label>Name</label>
-    <input type="text" id="display-name-input" placeholder="e.g. Alex" maxlength="24">
-    <div class="modal-btns">
-      <button class="btn-ghost" onclick="closeModal('name-modal')">Cancel</button>
-      <button class="btn-primary" onclick="saveDisplayName()">Save</button>
-    </div>
-  </div>
-</div>
-
 <div class="modal-backdrop" id="search-modal">
   <div class="modal" style="max-height:85dvh;display:flex;flex-direction:column">
     <div class="modal-handle"></div>
@@ -1226,21 +1097,6 @@
       <button class="btn-ghost" onclick="closeModal('money-widgets-modal')">Close</button>
       <button class="btn-primary" onclick="saveMoneyWidgets();closeModal('money-widgets-modal')">Save</button>
     </div>
-  </div>
-</div>
-
-<!-- Routine templates modal -->
-<div class="modal-backdrop" id="routine-templates-modal">
-  <div class="modal" style="max-height:88dvh">
-    <div class="modal-handle"></div>
-    <h2>Routine templates 📋</h2>
-    <p style="font-size:13px;color:var(--muted);margin-bottom:12px">Save your current <b>today</b> task list as a template, or apply a saved set (adds tasks with new IDs).</p>
-    <div class="form-group">
-      <label>New template name</label>
-      <input type="text" id="routine-template-name-input" placeholder="e.g. Travel day" maxlength="36">
-    </div>
-    <button type="button" class="btn-primary" style="width:100%;margin-bottom:16px" onclick="saveRoutineTemplateFromToday()">Save from today’s tasks</button>
-    <div id="routine-templates-list"></div>
   </div>
 </div>
 
@@ -1334,8 +1190,6 @@ let state = loadState();
 let editingTaskId = null;
 let selectedEmoji = '☀️';
 let selectedHabitEmoji = '💧';
-let timerStart = null;
-let timerTaskId = null;
 let currentPage = 'today';
 let taskPeriodWasManuallySet = false;
 let taskPeriodAutoSuggestEnabled = true;
@@ -1388,14 +1242,12 @@ function migrateBudgetState(s) {
 function migrateFeaturesState(s) {
   if (!s.balances || !Array.isArray(s.balances)) s.balances = [];
   if (!s.recurringBills || !Array.isArray(s.recurringBills)) s.recurringBills = [];
-  if (!s.routineTemplates || !Array.isArray(s.routineTemplates)) s.routineTemplates = [];
   if (!s.nextBalanceId) s.nextBalanceId = 1;
   if (s.nextBillId == null) s.nextBillId = 1;
-  if (s.nextTemplateId == null) s.nextTemplateId = 1;
   if (!s.recurringPosted || typeof s.recurringPosted !== 'object') s.recurringPosted = {};
   s.settings = s.settings || {};
   const todayWidgetKeys = ['greeting','weather','progress','mood','tasks','note'];
-  const moneyWidgetKeys = ['month','summary','budget','iou','bills','donut','trend','mom','incomeTrend','savings','transactions'];
+  const moneyWidgetKeys = ['month','summary','budget','iou','bills','donut','trend','savings','transactions'];
   if (!s.settings.todayWidgetOrder) {
     s.settings.todayWidgetOrder = [...todayWidgetKeys];
   } else {
@@ -1410,14 +1262,11 @@ function migrateFeaturesState(s) {
   }
   if (!s.settings.todayWidgetHidden || typeof s.settings.todayWidgetHidden !== 'object') s.settings.todayWidgetHidden = {};
   if (!s.settings.moneyWidgetHidden || typeof s.settings.moneyWidgetHidden !== 'object') s.settings.moneyWidgetHidden = {};
-  if (typeof s.settings.displayName !== 'string') s.settings.displayName = '';
   if (!['monday', 'sunday'].includes(s.settings.weekStart)) s.settings.weekStart = 'monday';
   if (!['manual', 'auto'].includes(s.settings.recurringBillMode)) s.settings.recurringBillMode = 'manual';
   if (typeof s.settings.weatherCity !== 'string') s.settings.weatherCity = 'Singapore';
-  if (typeof s.settings.habitWeeklyTarget !== 'number' || s.settings.habitWeeklyTarget < 1) s.settings.habitWeeklyTarget = 5;
   if (Array.isArray(s.tasks)) {
     s.tasks.forEach(task => {
-      if (typeof task.pinned !== 'boolean') task.pinned = false;
       if (typeof task.manualOrder !== 'number') task.manualOrder = Number.MAX_SAFE_INTEGER;
     });
   }
@@ -1448,14 +1297,12 @@ function getDefaultState() {
     lastActiveDate: '',
     settings: {
       reminders: true,
-      displayName: '',
       weekStart: 'monday',
       recurringBillMode: 'manual',
       weatherCity: 'Singapore',
-      habitWeeklyTarget: 5,
       todayWidgetOrder: ['greeting','weather','progress','mood','tasks','note'],
       todayWidgetHidden: {},
-      moneyWidgetOrder: ['month','summary','budget','iou','bills','donut','trend','mom','incomeTrend','savings','transactions'],
+      moneyWidgetOrder: ['month','summary','budget','iou','bills','donut','trend','savings','transactions'],
       moneyWidgetHidden: {},
     },
     nextTaskId: 10,
@@ -1465,10 +1312,8 @@ function getDefaultState() {
     savingsGoals: [],
     balances: [],
     recurringBills: [],
-    routineTemplates: [],
     nextBalanceId: 1,
     nextBillId: 1,
-    nextTemplateId: 1,
     recurringPosted: {},
   };
 }
@@ -1516,11 +1361,9 @@ function init() {
   updateStreak();
   updateLastBackupLabel();
   applyDarkMode();
-  updateGoalSub();
   updateCurrencySub();
   if (!appShellBound) {
     appShellBound = true;
-    setInterval(updateTimerDisplay, 1000);
     document.getElementById('daily-note').addEventListener('input', function() {
       state.notes[today()] = this.value;
       saveState();
@@ -1568,11 +1411,10 @@ function resetDailyTasksIfNeeded() {
 function updateGreeting() {
   const h = new Date().getHours();
   const el = document.getElementById('greeting-text');
-  const name = ((state.settings && state.settings.displayName) || '').trim();
-  if (h < 12) el.textContent = `Good Morning${name ? ', ' + name : ''} ☀️`;
-  else if (h < 17) el.textContent = `Good Afternoon${name ? ', ' + name : ''} 🌤`;
-  else if (h < 21) el.textContent = `Good Evening${name ? ', ' + name : ''} 🌆`;
-  else el.textContent = `Good Night${name ? ', ' + name : ''} 🌙`;
+  if (h < 12) el.textContent = 'Good Morning ☀️';
+  else if (h < 17) el.textContent = 'Good Afternoon 🌤';
+  else if (h < 21) el.textContent = 'Good Evening 🌆';
+  else el.textContent = 'Good Night 🌙';
 
   const d = new Date();
   const days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
@@ -1700,7 +1542,6 @@ function renderTasks() {
     const periodTasks = tasks
       .filter(t => t.period === period)
       .sort((a, b) => {
-        if (!!a.pinned !== !!b.pinned) return a.pinned ? -1 : 1;
         if ((a.manualOrder ?? Number.MAX_SAFE_INTEGER) !== (b.manualOrder ?? Number.MAX_SAFE_INTEGER)) {
           return (a.manualOrder ?? Number.MAX_SAFE_INTEGER) - (b.manualOrder ?? Number.MAX_SAFE_INTEGER);
         }
@@ -1740,8 +1581,6 @@ function buildTaskCard(task) {
   div.dataset.taskId = String(task.id);
 
   const catColors = { health: 'tag-health', work: 'tag-work', personal: 'tag-personal', mindset: 'tag-mindset' };
-  const isRunning = timerTaskId === task.id;
-
   div.innerHTML = `
     <div class="check-circle" onclick="toggleTask(${task.id}, event)">
       <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
@@ -1753,21 +1592,10 @@ function buildTaskCard(task) {
         <span class="task-time">${formatTime(task.time)}</span>
         ${task.duration ? `<span class="task-duration">· ${task.duration}m</span>` : ''}
         <span class="task-tag ${catColors[task.cat] || ''}">${task.cat}</span>
-        ${task.pinned ? '<span class="task-tag" style="background:rgba(247,212,106,.18);color:var(--accent4)">📌 pinned</span>' : ''}
       </div>
     </div>
-    <button type="button" onclick="togglePinTask(${task.id}, event)" style="background:transparent;border:none;color:${task.pinned ? 'var(--accent4)' : 'var(--muted)'};font-size:16px;cursor:pointer;padding:0 2px" aria-label="Pin task">📌</button>
-    <div style="display:flex;flex-direction:column;gap:2px">
-      <button type="button" onclick="moveTaskByOffset(${task.id}, -1, event)" style="background:transparent;border:none;color:var(--muted);font-size:12px;cursor:pointer;line-height:1" aria-label="Move task up">▲</button>
-      <button type="button" onclick="moveTaskByOffset(${task.id}, 1, event)" style="background:transparent;border:none;color:var(--muted);font-size:12px;cursor:pointer;line-height:1" aria-label="Move task down">▼</button>
-    </div>
-    ${isRunning ? `<div class="timer-badge" id="timer-badge-${task.id}">▶ running</div>` : `<div class="timer-badge timer-badge-start">▶</div>`}
   `;
   div.querySelector('.task-info').addEventListener('click', () => openEditModal(task.id));
-  const startBadge = div.querySelector('.timer-badge-start');
-  if (startBadge) {
-    startBadge.addEventListener('click', (e) => { e.stopPropagation(); startTimer(task.id, e); });
-  }
   return div;
 }
 
@@ -1868,16 +1696,6 @@ function inferPeriodFromTime(t) {
   return 'night';
 }
 
-function togglePinTask(id, e) {
-  e && e.stopPropagation();
-  const task = state.tasks.find(t => t.id === id);
-  if (!task) return;
-  task.pinned = !task.pinned;
-  saveState();
-  renderTasks();
-  toast(task.pinned ? `📌 "${task.name}" pinned` : `↩ "${task.name}" unpinned`);
-}
-
 function bindTaskDragForList(listEl) {
   let draggingEl = null;
   listEl.querySelectorAll('.task-card').forEach(card => {
@@ -1898,26 +1716,6 @@ function bindTaskDragForList(listEl) {
       listEl.insertBefore(draggingEl, before ? card : card.nextSibling);
     });
   });
-}
-
-function moveTaskByOffset(taskId, offset, e) {
-  e && e.stopPropagation();
-  const task = state.tasks.find(t => t.id === taskId);
-  if (!task) return;
-  const peers = state.tasks
-    .filter(t => t.period === task.period && !!t.pinned === !!task.pinned)
-    .sort((a, b) => (a.manualOrder ?? Number.MAX_SAFE_INTEGER) - (b.manualOrder ?? Number.MAX_SAFE_INTEGER));
-  const idx = peers.findIndex(t => t.id === taskId);
-  if (idx < 0) return;
-  const j = idx + offset;
-  if (j < 0 || j >= peers.length) return;
-  const swap = peers[j];
-  const a = task.manualOrder ?? Number.MAX_SAFE_INTEGER;
-  const b = swap.manualOrder ?? Number.MAX_SAFE_INTEGER;
-  task.manualOrder = b;
-  swap.manualOrder = a;
-  saveState();
-  renderTasks();
 }
 
 function persistManualTaskOrder(listEl) {
@@ -2002,35 +1800,6 @@ function renderNote() {
 // ═══════════════════════════════════════════════
 //  TIMER
 // ═══════════════════════════════════════════════
-function startTimer(id, e) {
-  e && e.stopPropagation();
-  const task = state.tasks.find(t => t.id === id);
-  const name = task ? task.name : 'Task';
-  if (timerTaskId) stopTimer();
-  timerTaskId = id;
-  timerStart = Date.now();
-  document.getElementById('active-timer-bar').classList.remove('hidden');
-  document.getElementById('timer-task-name').textContent = name;
-  renderTasks();
-  toast(`▶ Timer started for "${name}"`);
-}
-
-function stopTimer() {
-  timerTaskId = null;
-  timerStart = null;
-  document.getElementById('active-timer-bar').classList.add('hidden');
-  renderTasks();
-}
-
-function updateTimerDisplay() {
-  if (timerStart) {
-    const elapsed = Math.floor((Date.now() - timerStart) / 1000);
-    const m = Math.floor(elapsed / 60).toString().padStart(2,'0');
-    const s = (elapsed % 60).toString().padStart(2,'0');
-    document.getElementById('timer-display').textContent = `${m}:${s}`;
-  }
-}
-
 // ═══════════════════════════════════════════════
 //  HABITS
 // ═══════════════════════════════════════════════
@@ -2046,7 +1815,6 @@ function renderHabits() {
     grid.appendChild(card);
   });
   renderHabitMonthlyCalendar();
-  renderHabitWeeklyTargetCard();
 }
 
 function buildHabitCard(habit) {
@@ -2231,9 +1999,6 @@ function renderStats() {
       <div class="heatmap-wrap">${buildCompletionHeatmapHtml()}</div>
     </div>
   `;
-  renderMonthlySummaryCard();
-  renderPersonalBestsCard();
-  renderHabitStatsCard();
 }
 
 function completionRatioForDate(ds) {
@@ -2264,34 +2029,7 @@ function buildCompletionHeatmapHtml() {
 function loadSettings() {
   applyDarkMode();
   updateCurrencySub();
-  updateGoalSub();
-  updateDisplayNameSub();
   updateWeekStartSub();
-  updateHabitWeeklyTargetLabel();
-}
-
-function openNameModal() {
-  const input = document.getElementById('display-name-input');
-  if (input) input.value = (state.settings && state.settings.displayName) || '';
-  openModal('name-modal');
-}
-
-function saveDisplayName() {
-  state.settings = state.settings || {};
-  const input = document.getElementById('display-name-input');
-  state.settings.displayName = (input ? input.value : '').trim();
-  saveState();
-  updateDisplayNameSub();
-  updateGreeting();
-  closeModal('name-modal');
-  toast('✅ Name saved');
-}
-
-function updateDisplayNameSub() {
-  const sub = document.getElementById('display-name-sub');
-  if (!sub) return;
-  const name = ((state.settings && state.settings.displayName) || '').trim();
-  sub.textContent = name ? `Current: ${name}` : 'Tap to set your name';
 }
 
 function toggleWeekStart() {
@@ -2384,7 +2122,6 @@ function saveTask() {
     repeat,
     repeatMeta,
     done: false,
-    pinned: false,
     manualOrder: Number.MAX_SAFE_INTEGER,
   };
 
@@ -2393,7 +2130,6 @@ function saveTask() {
     const prev = state.tasks[idx];
     taskData.id = editingTaskId;
     taskData.done = prev.done;
-    taskData.pinned = !!prev.pinned;
     taskData.manualOrder = typeof prev.manualOrder === 'number' ? prev.manualOrder : Number.MAX_SAFE_INTEGER;
     taskData.createdAt = prev.createdAt;
     state.tasks[idx] = taskData;
@@ -2832,64 +2568,8 @@ function renderMoney() {
   renderRecurringBillsSection();
   renderDonut(txns);
   renderTrendBars();
-  renderMonthComparisonCard();
-  renderIncomeTrendBars();
   renderSavingsCard();
   renderTxnList();
-}
-
-function renderMonthComparisonCard() {
-  const wrap = document.getElementById('mom-card-wrap');
-  if (!wrap) return;
-  const cur = getTxnsForMonth(moneyViewMonth, moneyViewYear);
-  const curIncome = cur.filter(t => t.type === 'income').reduce((s, t) => s + t.amount, 0);
-  const curExpense = cur.filter(t => t.type === 'expense').reduce((s, t) => s + t.amount, 0);
-  const prevMonth = moneyViewMonth === 0 ? 11 : moneyViewMonth - 1;
-  const prevYear = moneyViewMonth === 0 ? moneyViewYear - 1 : moneyViewYear;
-  const prev = getTxnsForMonth(prevMonth, prevYear);
-  const prevIncome = prev.filter(t => t.type === 'income').reduce((s, t) => s + t.amount, 0);
-  const prevExpense = prev.filter(t => t.type === 'expense').reduce((s, t) => s + t.amount, 0);
-  const expenseDelta = curExpense - prevExpense;
-  const incomeDelta = curIncome - prevIncome;
-  const expenseSign = expenseDelta > 0 ? '+' : '';
-  const incomeSign = incomeDelta > 0 ? '+' : '';
-  wrap.innerHTML = `
-    <h3>Month-over-month</h3>
-    <div style="font-size:12px;color:var(--muted);margin-top:6px">Compared with previous month</div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px">
-      <div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:10px">
-        <div style="font-size:11px;color:var(--muted)">Expenses</div>
-        <div style="font-weight:700;color:${expenseDelta > 0 ? 'var(--danger)' : 'var(--accent3)'}">${expenseSign}${fmt(expenseDelta)}</div>
-      </div>
-      <div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:10px">
-        <div style="font-size:11px;color:var(--muted)">Income</div>
-        <div style="font-weight:700;color:${incomeDelta < 0 ? 'var(--danger)' : 'var(--accent3)'}">${incomeSign}${fmt(incomeDelta)}</div>
-      </div>
-    </div>
-  `;
-}
-
-function renderIncomeTrendBars() {
-  const bars = document.getElementById('income-trend-bars');
-  if (!bars) return;
-  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-  const data = [];
-  for (let i = 5; i >= 0; i--) {
-    const d = new Date(moneyViewYear, moneyViewMonth - i, 1);
-    const y = d.getFullYear();
-    const m = d.getMonth();
-    const txns = getTxnsForMonth(m, y);
-    const income = txns.filter(t => t.type === 'income').reduce((s, t) => s + t.amount, 0);
-    data.push({ label: months[m], income, isCurrent: i === 0 });
-  }
-  const max = Math.max(...data.map(d => d.income), 1);
-  bars.innerHTML = data.map(d => {
-    const h = Math.max(4, Math.round((d.income / max) * 56));
-    return `<div class="trend-bar-wrap" title="${d.label}: ${fmt(d.income)}">
-      <div class="trend-bar" style="height:${h}px;background:${d.isCurrent ? 'var(--accent3)' : 'var(--accent)'};opacity:${d.isCurrent ? 1 : 0.65}"></div>
-      <div class="trend-day">${d.label}</div>
-    </div>`;
-  }).join('');
 }
 
 function exportTransactionsCsv() {
@@ -2997,7 +2677,7 @@ function renderTrendBars() {
     const isToday = d.dateStr === todayStr;
     const isFuture = isCurrentMonth && d.date > todayDate;
     const h = Math.max(4, Math.round(d.amt / max * 56));
-    const color = isToday ? 'var(--accent2)' : 'var(--accent)';
+    const color = d.amt === 0 ? 'var(--muted)' : (isToday ? 'var(--accent2)' : 'var(--accent)');
     const opacity = isFuture ? 0.2 : (isToday ? 1 : 0.6);
     bars.innerHTML += `<div class="trend-bar-wrap" onclick="showDayDetail('${d.dateStr}')">
       <div class="trend-bar" style="height:${h}px;background:${color};opacity:${opacity}"></div>
@@ -3436,33 +3116,6 @@ function applyDarkMode() {
 }
 
 // ═══════════════════════════════════════════════
-//  DAILY GOAL MODAL
-// ═══════════════════════════════════════════════
-function openGoalModal() {
-  document.getElementById('goal-input').value = state.settings.goalText || '';
-  document.getElementById('goal-tasks-input').value = state.settings.goalTasks || '0';
-  openModal('goal-modal');
-}
-
-function saveGoal() {
-  const text = document.getElementById('goal-input').value.trim();
-  const tasks = document.getElementById('goal-tasks-input').value;
-  state.settings.goalText = text || 'Complete all tasks';
-  state.settings.goalTasks = tasks;
-  saveState();
-  updateGoalSub();
-  closeModal('goal-modal');
-  toast('🎯 Daily goal saved!');
-}
-
-function updateGoalSub() {
-  const el = document.getElementById('goal-sub');
-  if (!el) return;
-  const text = state.settings && state.settings.goalText;
-  el.textContent = text || 'Tap to set your daily goal';
-}
-
-// ═══════════════════════════════════════════════
 //  CURRENCY
 // ═══════════════════════════════════════════════
 const CURRENCIES = [
@@ -3732,7 +3385,7 @@ function applyTodayWidgetLayout() {
 function applyMoneyWidgetLayout() {
   const parent = document.getElementById('page-money');
   if (!parent) return;
-  const order = (state.settings && state.settings.moneyWidgetOrder) || ['month','summary','budget','iou','bills','donut','trend','mom','incomeTrend','savings','transactions'];
+  const order = (state.settings && state.settings.moneyWidgetOrder) || ['month','summary','budget','iou','bills','donut','trend','savings','transactions'];
   const hidden = (state.settings && state.settings.moneyWidgetHidden) || {};
   order.forEach(key => {
     const el = document.querySelector(`[data-money-widget="${key}"]`);
@@ -3792,7 +3445,7 @@ function saveTodayWidgets() {
 }
 
 function openMoneyWidgetsModal() {
-  const keys = ['month','summary','budget','iou','bills','donut','trend','mom','incomeTrend','savings','transactions'];
+  const keys = ['month','summary','budget','iou','bills','donut','trend','savings','transactions'];
   const labels = {
     month: 'Month selector',
     summary: 'Balance summary',
@@ -3801,8 +3454,6 @@ function openMoneyWidgetsModal() {
     bills: 'Recurring bills',
     donut: 'Spending by category',
     trend: 'Monthly trend',
-    mom: 'Month-over-month',
-    incomeTrend: 'Income trend',
     savings: 'Savings goals',
     transactions: 'Transactions section',
   };
@@ -3850,81 +3501,6 @@ function saveMoneyWidgets() {
   saveState();
   applyMoneyWidgetLayout();
   toast('Expense screen updated');
-}
-
-function openRoutineTemplatesModal() {
-  const list = document.getElementById('routine-templates-list');
-  const tpls = state.routineTemplates || [];
-  if (!tpls.length) {
-    list.innerHTML = '<p style="font-size:13px;color:var(--muted);text-align:center;padding:16px">No templates yet. Save from today’s tasks above.</p>';
-  } else {
-    list.innerHTML = tpls.map(t => `
-      <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:12px;margin-bottom:8px">
-        <div><div style="font-weight:600">${escapeHtml(t.name)}</div><div style="font-size:11px;color:var(--muted)">${t.tasks.length} tasks</div></div>
-        <div style="display:flex;gap:8px;align-items:center">
-          <button type="button" class="btn-delete-template" onclick="deleteRoutineTemplate(${t.id})" title="Delete template" aria-label="Delete template">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-              <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4v2H5V4h3.5l1-1h5l1 1H19z"/>
-            </svg>
-          </button>
-          <button type="button" class="btn-primary" style="padding:8px 12px" onclick="applyRoutineTemplate(${t.id})">Apply</button>
-        </div>
-      </div>
-    `).join('');
-  }
-  openModal('routine-templates-modal');
-}
-
-function saveRoutineTemplateFromToday() {
-  const name = document.getElementById('routine-template-name-input').value.trim();
-  if (!name) { toast('⚠️ Enter a template name'); return; }
-  const todayTasks = getTasksForToday().map(t => ({
-    emoji: t.emoji, name: t.name, time: t.time, duration: t.duration, period: t.period, cat: t.cat,
-    repeat: t.repeat, repeatMeta: t.repeatMeta ? JSON.parse(JSON.stringify(t.repeatMeta)) : {},
-  }));
-  if (!todayTasks.length) { toast('⚠️ No tasks scheduled for today to save'); return; }
-  if (!state.routineTemplates) state.routineTemplates = [];
-  state.routineTemplates.push({ id: state.nextTemplateId++, name, tasks: todayTasks });
-  saveState();
-  toast('📋 Template saved');
-  document.getElementById('routine-template-name-input').value = '';
-  openRoutineTemplatesModal();
-}
-
-function applyRoutineTemplate(id) {
-  const tpl = (state.routineTemplates || []).find(t => t.id === id);
-  if (!tpl) return;
-  tpl.tasks.forEach(t => {
-    state.tasks.push({
-      id: state.nextTaskId++,
-      emoji: t.emoji,
-      name: t.name,
-      time: t.time,
-      duration: t.duration || 15,
-      period: t.period || 'morning',
-      cat: t.cat || 'health',
-      repeat: t.repeat || 'daily',
-      repeatMeta: t.repeatMeta || {},
-      done: false,
-      createdAt: today(),
-    });
-  });
-  saveState();
-  closeModal('routine-templates-modal');
-  renderTasks();
-  renderStats();
-  toast(`✅ Added ${tpl.tasks.length} tasks from “${tpl.name}”`);
-}
-
-function deleteRoutineTemplate(id) {
-  const list = state.routineTemplates || [];
-  const tpl = list.find(t => t.id === id);
-  if (!tpl) return;
-  if (!confirm(`Delete template "${tpl.name}"?`)) return;
-  state.routineTemplates = list.filter(t => t.id !== id);
-  saveState();
-  openRoutineTemplatesModal();
-  toast('🗑 Template deleted');
 }
 
 function renderIouSection() {
@@ -4037,22 +3613,6 @@ function updateRecurringModeSub() {
   sub.textContent = `Posting mode: ${mode}`;
 }
 
-function updateHabitWeeklyTargetLabel() {
-  const el = document.getElementById('habit-weekly-target-label');
-  if (!el) return;
-  const target = (state.settings && state.settings.habitWeeklyTarget) || 5;
-  el.textContent = `${target} / week`;
-}
-
-function adjustHabitWeeklyTarget(delta) {
-  state.settings = state.settings || {};
-  const cur = state.settings.habitWeeklyTarget || 5;
-  state.settings.habitWeeklyTarget = Math.max(1, Math.min(28, cur + delta));
-  saveState();
-  updateHabitWeeklyTargetLabel();
-  renderHabitWeeklyTargetCard();
-}
-
 function startOfWeekDate(baseDate) {
   const startsSunday = (state.settings && state.settings.weekStart) === 'sunday';
   const d = new Date(baseDate);
@@ -4061,28 +3621,6 @@ function startOfWeekDate(baseDate) {
   d.setDate(d.getDate() - shift);
   d.setHours(0, 0, 0, 0);
   return d;
-}
-
-function renderHabitWeeklyTargetCard() {
-  const box = document.getElementById('habit-weekly-target-card');
-  if (!box) return;
-  const start = startOfWeekDate(new Date());
-  const end = new Date(start);
-  end.setDate(end.getDate() + 7);
-  const totalDone = (state.habits || []).reduce((sum, h) => {
-    const cnt = (h.history || []).filter(ds => {
-      const d = new Date(ds + 'T12:00:00');
-      return d >= start && d < end;
-    }).length;
-    return sum + cnt;
-  }, 0);
-  const target = (state.settings && state.settings.habitWeeklyTarget) || 5;
-  const pct = Math.min(100, Math.round((totalDone / target) * 100));
-  box.innerHTML = `
-    <div style="font-size:12px;color:var(--muted)">This week: <b>${totalDone}</b> completions</div>
-    <div class="budget-track" style="margin-top:8px"><div class="budget-fill" style="width:${pct}%;background:${pct >= 100 ? 'var(--accent3)' : 'var(--accent)'}"></div></div>
-    <div style="font-size:11px;color:var(--muted);margin-top:6px">${pct}% of weekly target (${target})</div>
-  `;
 }
 
 function renderHabitMonthlyCalendar() {
@@ -4108,61 +3646,6 @@ function renderHabitMonthlyCalendar() {
   wrap.innerHTML = `
     <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px;font-size:10px;color:var(--muted);margin-bottom:6px">${dayLabels.map(d => `<div style="text-align:center">${d}</div>`).join('')}</div>
     <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px">${cellHtml.join('')}</div>
-  `;
-}
-
-function renderMonthlySummaryCard() {
-  const box = document.getElementById('monthly-summary-card');
-  if (!box) return;
-  const now = new Date();
-  const y = now.getFullYear();
-  const m = now.getMonth();
-  const monthTxns = getTxnsForMonth(m, y);
-  const expense = monthTxns.filter(t => t.type === 'expense').reduce((s, t) => s + t.amount, 0);
-  const income = monthTxns.filter(t => t.type === 'income').reduce((s, t) => s + t.amount, 0);
-  const completedThisMonth = Object.entries(state.completedDays || {}).filter(([ds]) => {
-    const d = new Date(ds + 'T12:00:00');
-    return d.getFullYear() === y && d.getMonth() === m;
-  }).length;
-  box.innerHTML = `
-    <h3>Monthly Summary</h3>
-    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:8px">
-      <div style="background:var(--surface2);padding:10px;border-radius:10px"><div style="font-size:10px;color:var(--muted)">Income</div><div style="font-weight:700">${fmt(income)}</div></div>
-      <div style="background:var(--surface2);padding:10px;border-radius:10px"><div style="font-size:10px;color:var(--muted)">Spent</div><div style="font-weight:700">${fmt(expense)}</div></div>
-      <div style="background:var(--surface2);padding:10px;border-radius:10px"><div style="font-size:10px;color:var(--muted)">Active Days</div><div style="font-weight:700">${completedThisMonth}</div></div>
-    </div>
-  `;
-}
-
-function renderPersonalBestsCard() {
-  const box = document.getElementById('personal-bests-card');
-  if (!box) return;
-  const bestHabitStreak = Math.max(...(state.habits || []).map(h => h.longestStreak || 0), 0);
-  const bestDayTasks = Math.max(0, ...Object.values(state.completedDays || {}).map(v => (v || []).length));
-  const mostCompletedHabit = (state.habits || []).slice().sort((a, b) => (b.history || []).length - (a.history || []).length)[0];
-  box.innerHTML = `
-    <h3>Personal Bests</h3>
-    <div style="font-size:12px;margin-top:8px;line-height:1.7">
-      <div>🔥 Longest habit streak: <b>${bestHabitStreak}</b></div>
-      <div>✅ Most tasks done in one day: <b>${bestDayTasks}</b></div>
-      <div>🌱 Most completed habit: <b>${mostCompletedHabit ? escapeHtml(mostCompletedHabit.name) : '—'}</b></div>
-    </div>
-  `;
-}
-
-function renderHabitStatsCard() {
-  const box = document.getElementById('habit-stats-card');
-  if (!box) return;
-  const totalCompletions = (state.habits || []).reduce((s, h) => s + (h.history || []).length, 0);
-  const activeHabits = (state.habits || []).length;
-  const avgPerHabit = activeHabits ? (totalCompletions / activeHabits).toFixed(1) : '0';
-  box.innerHTML = `
-    <h3>Habit Stats</h3>
-    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:8px">
-      <div style="background:var(--surface2);padding:10px;border-radius:10px"><div style="font-size:10px;color:var(--muted)">Completions</div><div style="font-weight:700">${totalCompletions}</div></div>
-      <div style="background:var(--surface2);padding:10px;border-radius:10px"><div style="font-size:10px;color:var(--muted)">Habits</div><div style="font-weight:700">${activeHabits}</div></div>
-      <div style="background:var(--surface2);padding:10px;border-radius:10px"><div style="font-size:10px;color:var(--muted)">Avg/Habit</div><div style="font-weight:700">${avgPerHabit}</div></div>
-    </div>
   `;
 }
 
@@ -4347,7 +3830,7 @@ function postRecurringBillsInternal(showToastOnPosted, isAutoMode) {
   let swipeBlocked = false;
   screen.addEventListener('touchstart', (e) => {
     if (document.querySelector('.modal-backdrop.open')) return;
-    swipeBlocked = !!(e.target && e.target.closest && e.target.closest('.trend-bars-scroll, .filter-scroll, #income-trend-scroll, #txn-list'));
+    swipeBlocked = !!(e.target && e.target.closest && e.target.closest('.trend-bars-scroll, .filter-scroll, #txn-list'));
     const t = e.touches[0];
     sx = t.clientX;
     sy = t.clientY;
