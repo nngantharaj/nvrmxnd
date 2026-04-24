@@ -425,6 +425,16 @@
         <h1 id="greeting-text">Good Morning ☀️</h1>
         <div class="quote quote-anim" id="daily-quote"></div>
       </div>
+
+      <div data-today-widget="weather" class="today-widget">
+      <div class="section-label with-action">
+        <div style="display:flex;align-items:center;gap:8px"><div class="dot" style="background:var(--accent3)"></div>Weather</div>
+        <button type="button" class="pill-btn-upcoming" onclick="refreshWeather(true)">Refresh</button>
+      </div>
+      <div class="donut-card" id="weather-card-wrap">
+        <div style="font-size:13px;color:var(--muted)">Loading weather...</div>
+      </div>
+      </div>
       </div>
 
       <!-- Progress Ring -->
@@ -475,8 +485,11 @@
 
       <div data-today-widget="tasks" class="today-widget">
       <div class="section-label with-action">
-        <div style="display:flex;align-items:center;gap:8px"><div class="dot" style="background:var(--accent)"></div>Tasks</div>
-        <button type="button" class="pill-btn-upcoming" onclick="openUpcomingModal()">Upcoming (<span id="upcoming-count">0</span>)</button>
+        <div style="display:flex;align-items:center;gap:8px"><div class="dot" style="background:var(--accent)"></div>Tasks <span id="task-counter-badge" style="font-size:11px;background:var(--surface2);padding:2px 8px;border-radius:999px;color:var(--muted)">0/0</span></div>
+        <div style="display:flex;gap:6px">
+          <button type="button" class="pill-btn-upcoming" onclick="openSearchModal()">Search</button>
+          <button type="button" class="pill-btn-upcoming" onclick="openUpcomingModal()">Upcoming (<span id="upcoming-count">0</span>)</button>
+        </div>
       </div>
 
       <!-- Task sections -->
@@ -501,9 +514,24 @@
         <h1>Habits 🌱</h1>
         <p>Build consistency, one day at a time</p>
       </div>
+      <div class="today-widget">
+        <div class="section-label with-action">
+          <div style="display:flex;align-items:center;gap:8px"><div class="dot" style="background:var(--accent4)"></div>Weekly Target</div>
+          <div style="display:flex;align-items:center;gap:8px">
+            <button type="button" class="pill-btn-upcoming" onclick="adjustHabitWeeklyTarget(-1)">-</button>
+            <span id="habit-weekly-target-label" style="font-size:12px;color:var(--muted)">5 / week</span>
+            <button type="button" class="pill-btn-upcoming" onclick="adjustHabitWeeklyTarget(1)">+</button>
+          </div>
+        </div>
+        <div class="donut-card" id="habit-weekly-target-card"></div>
+      </div>
       <div class="medals-row" id="medals-row"></div>
       <div class="section-label"><div class="dot" style="background:var(--accent)"></div>Your Habits</div>
       <div class="habit-grid" id="habit-grid"></div>
+      <div class="today-widget">
+        <div class="section-label"><div class="dot" style="background:var(--accent2)"></div>Monthly Habit Calendar</div>
+        <div class="donut-card" id="habit-calendar-wrap"></div>
+      </div>
     </div>
 
     <!-- ══════ STATS ══════ -->
@@ -512,6 +540,9 @@
         <h1>Stats 📊</h1>
         <p>Your progress at a glance</p>
       </div>
+      <div class="today-widget"><div class="donut-card" id="monthly-summary-card"></div></div>
+      <div class="today-widget"><div class="donut-card" id="personal-bests-card"></div></div>
+      <div class="today-widget"><div class="donut-card" id="habit-stats-card"></div></div>
       <div class="stats-grid" id="stats-grid"></div>
     </div>
 
@@ -538,6 +569,20 @@
             <div><div class="settings-label">Dark Mode</div><div class="settings-sub" id="dark-mode-sub">Currently: Dark</div></div>
           </div>
           <button class="toggle on" id="toggle-dark"></button>
+        </div>
+        <div class="settings-item" onclick="openNameModal()">
+          <div class="settings-item-left">
+            <div class="settings-icon" style="background:rgba(124,106,247,.15)">👤</div>
+            <div><div class="settings-label">Your Name</div><div class="settings-sub" id="display-name-sub">Tap to set your name</div></div>
+          </div>
+          <span style="color:var(--accent);font-size:18px">›</span>
+        </div>
+        <div class="settings-item" onclick="toggleWeekStart()">
+          <div class="settings-item-left">
+            <div class="settings-icon" style="background:rgba(247,212,106,.15)">🗓️</div>
+            <div><div class="settings-label">First Day of Week</div><div class="settings-sub" id="week-start-sub">Monday</div></div>
+          </div>
+          <span style="color:var(--accent4);font-size:18px">›</span>
         </div>
         <div class="settings-item" onclick="openTodayWidgetsModal()">
           <div class="settings-item-left">
@@ -695,6 +740,10 @@
       <div class="donut-card" style="cursor:default">
         <h3>Recurring bills</h3>
         <p style="font-size:12px;color:var(--muted);margin:8px 0">Templates for regular payments. Post them into the current month when due.</p>
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px">
+          <span id="recurring-mode-sub" style="font-size:12px;color:var(--muted)">Posting mode: Manual</span>
+          <button type="button" class="pill-btn-upcoming" id="recurring-mode-btn" onclick="toggleRecurringBillMode()">Switch to Auto</button>
+        </div>
         <div id="recurring-bills-list"></div>
         <button type="button" class="btn-ghost" style="width:100%;margin-top:8px" onclick="openRecurringBillModal(null)">+ Add recurring bill</button>
         <button type="button" class="btn-primary" style="width:100%;margin-top:8px" onclick="postRecurringBillsForMonth()">Post due bills this month</button>
@@ -730,6 +779,19 @@
       </div>
       </div>
 
+      <div data-money-widget="mom" class="money-widget">
+      <div class="donut-card" id="mom-card-wrap"></div>
+      </div>
+
+      <div data-money-widget="incomeTrend" class="money-widget">
+      <div class="trend-card">
+        <h3>Income Trend (last 6 months)</h3>
+        <div class="trend-bars-scroll" id="income-trend-scroll">
+          <div class="trend-bars" id="income-trend-bars"></div>
+        </div>
+      </div>
+      </div>
+
       <!-- Savings goals -->
       <div data-money-widget="savings" class="money-widget">
       <div class="savings-card" id="savings-card-wrap"></div>
@@ -737,7 +799,13 @@
 
       <!-- Filter pills -->
       <div data-money-widget="transactions" class="money-widget">
-      <div class="section-label"><div class="dot" style="background:var(--accent2)"></div>Transactions</div>
+      <div class="section-label with-action">
+        <div style="display:flex;align-items:center;gap:8px"><div class="dot" style="background:var(--accent2)"></div>Transactions</div>
+        <div style="display:flex;gap:6px">
+          <button type="button" class="pill-btn-upcoming" onclick="openSearchModal()">Search</button>
+          <button type="button" class="pill-btn-upcoming" onclick="exportTransactionsCsv()">Export CSV</button>
+        </div>
+      </div>
       <div class="filter-scroll" id="txn-filter-row">
         <div class="filter-pill active" onclick="filterTxns('all',this)">All</div>
         <div class="filter-pill" onclick="filterTxns('food',this)">🍔 Food</div>
@@ -1107,6 +1175,32 @@
   </div>
 </div>
 
+<div class="modal-backdrop" id="name-modal">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <h2>Your Name</h2>
+    <p style="font-size:13px;color:var(--muted);margin-bottom:12px">We use this in your greeting.</p>
+    <label>Name</label>
+    <input type="text" id="display-name-input" placeholder="e.g. Alex" maxlength="24">
+    <div class="modal-btns">
+      <button class="btn-ghost" onclick="closeModal('name-modal')">Cancel</button>
+      <button class="btn-primary" onclick="saveDisplayName()">Save</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-backdrop" id="search-modal">
+  <div class="modal" style="max-height:85dvh;display:flex;flex-direction:column">
+    <div class="modal-handle"></div>
+    <h2>Search</h2>
+    <input type="text" id="global-search-input" placeholder="Search tasks, habits, transactions..." oninput="renderGlobalSearchResults()" style="margin-bottom:12px">
+    <div id="global-search-results" style="overflow-y:auto;flex:1;display:flex;flex-direction:column;gap:8px"></div>
+    <div class="modal-btns">
+      <button class="btn-ghost" onclick="closeModal('search-modal')">Close</button>
+    </div>
+  </div>
+</div>
+
 <!-- Today widgets modal -->
 <div class="modal-backdrop" id="today-widgets-modal">
   <div class="modal">
@@ -1243,6 +1337,12 @@ let selectedHabitEmoji = '💧';
 let timerStart = null;
 let timerTaskId = null;
 let currentPage = 'today';
+let taskPeriodWasManuallySet = false;
+let taskPeriodAutoSuggestEnabled = true;
+let lastConfettiDate = '';
+let globalSearchTerm = '';
+let weatherCache = null;
+const WEATHER_CACHE_MS = 15 * 60 * 1000;
 
 const quotes = [
   "Small steps every day lead to big results.",
@@ -1294,8 +1394,8 @@ function migrateFeaturesState(s) {
   if (s.nextTemplateId == null) s.nextTemplateId = 1;
   if (!s.recurringPosted || typeof s.recurringPosted !== 'object') s.recurringPosted = {};
   s.settings = s.settings || {};
-  const todayWidgetKeys = ['greeting','progress','mood','tasks','note'];
-  const moneyWidgetKeys = ['month','summary','budget','iou','bills','donut','trend','savings','transactions'];
+  const todayWidgetKeys = ['greeting','weather','progress','mood','tasks','note'];
+  const moneyWidgetKeys = ['month','summary','budget','iou','bills','donut','trend','mom','incomeTrend','savings','transactions'];
   if (!s.settings.todayWidgetOrder) {
     s.settings.todayWidgetOrder = [...todayWidgetKeys];
   } else {
@@ -1310,6 +1410,17 @@ function migrateFeaturesState(s) {
   }
   if (!s.settings.todayWidgetHidden || typeof s.settings.todayWidgetHidden !== 'object') s.settings.todayWidgetHidden = {};
   if (!s.settings.moneyWidgetHidden || typeof s.settings.moneyWidgetHidden !== 'object') s.settings.moneyWidgetHidden = {};
+  if (typeof s.settings.displayName !== 'string') s.settings.displayName = '';
+  if (!['monday', 'sunday'].includes(s.settings.weekStart)) s.settings.weekStart = 'monday';
+  if (!['manual', 'auto'].includes(s.settings.recurringBillMode)) s.settings.recurringBillMode = 'manual';
+  if (typeof s.settings.weatherCity !== 'string') s.settings.weatherCity = 'Singapore';
+  if (typeof s.settings.habitWeeklyTarget !== 'number' || s.settings.habitWeeklyTarget < 1) s.settings.habitWeeklyTarget = 5;
+  if (Array.isArray(s.tasks)) {
+    s.tasks.forEach(task => {
+      if (typeof task.pinned !== 'boolean') task.pinned = false;
+      if (typeof task.manualOrder !== 'number') task.manualOrder = Number.MAX_SAFE_INTEGER;
+    });
+  }
 }
 
 function getDefaultState() {
@@ -1337,9 +1448,14 @@ function getDefaultState() {
     lastActiveDate: '',
     settings: {
       reminders: true,
-      todayWidgetOrder: ['greeting','progress','mood','tasks','note'],
+      displayName: '',
+      weekStart: 'monday',
+      recurringBillMode: 'manual',
+      weatherCity: 'Singapore',
+      habitWeeklyTarget: 5,
+      todayWidgetOrder: ['greeting','weather','progress','mood','tasks','note'],
       todayWidgetHidden: {},
-      moneyWidgetOrder: ['month','summary','budget','iou','bills','donut','trend','savings','transactions'],
+      moneyWidgetOrder: ['month','summary','budget','iou','bills','donut','trend','mom','incomeTrend','savings','transactions'],
       moneyWidgetHidden: {},
     },
     nextTaskId: 10,
@@ -1391,6 +1507,8 @@ function init() {
   renderProgress();
   renderMood();
   renderNote();
+  renderWeatherWidget();
+  refreshWeather(false);
   renderHabits();
   renderStats();
   renderMedals();
@@ -1407,6 +1525,19 @@ function init() {
       state.notes[today()] = this.value;
       saveState();
     });
+    const timeInput = document.getElementById('task-time-input');
+    const periodInput = document.getElementById('task-period-input');
+    if (timeInput) {
+      timeInput.addEventListener('change', () => {
+        if (!taskPeriodAutoSuggestEnabled || taskPeriodWasManuallySet) return;
+        periodInput.value = inferPeriodFromTime(timeInput.value);
+      });
+    }
+    if (periodInput) {
+      periodInput.addEventListener('change', () => {
+        taskPeriodWasManuallySet = true;
+      });
+    }
   }
   applyTodayWidgetLayout();
   applyMoneyWidgetLayout();
@@ -1437,10 +1568,11 @@ function resetDailyTasksIfNeeded() {
 function updateGreeting() {
   const h = new Date().getHours();
   const el = document.getElementById('greeting-text');
-  if (h < 12) el.textContent = 'Good Morning ☀️';
-  else if (h < 17) el.textContent = 'Good Afternoon 🌤';
-  else if (h < 21) el.textContent = 'Good Evening 🌆';
-  else el.textContent = 'Good Night 🌙';
+  const name = ((state.settings && state.settings.displayName) || '').trim();
+  if (h < 12) el.textContent = `Good Morning${name ? ', ' + name : ''} ☀️`;
+  else if (h < 17) el.textContent = `Good Afternoon${name ? ', ' + name : ''} 🌤`;
+  else if (h < 21) el.textContent = `Good Evening${name ? ', ' + name : ''} 🌆`;
+  else el.textContent = `Good Night${name ? ', ' + name : ''} 🌙`;
 
   const d = new Date();
   const days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
@@ -1565,7 +1697,15 @@ function renderTasks() {
   const tasks = getTasksForToday();
 
   PERIODS.forEach(period => {
-    const periodTasks = tasks.filter(t => t.period === period).sort((a,b) => a.time.localeCompare(b.time));
+    const periodTasks = tasks
+      .filter(t => t.period === period)
+      .sort((a, b) => {
+        if (!!a.pinned !== !!b.pinned) return a.pinned ? -1 : 1;
+        if ((a.manualOrder ?? Number.MAX_SAFE_INTEGER) !== (b.manualOrder ?? Number.MAX_SAFE_INTEGER)) {
+          return (a.manualOrder ?? Number.MAX_SAFE_INTEGER) - (b.manualOrder ?? Number.MAX_SAFE_INTEGER);
+        }
+        return (a.time || '').localeCompare(b.time || '');
+      });
     if (!periodTasks.length) return;
 
     const label = document.createElement('div');
@@ -1575,9 +1715,11 @@ function renderTasks() {
 
     const list = document.createElement('div');
     list.className = 'task-list';
+    list.dataset.period = period;
     periodTasks.forEach(task => {
       list.appendChild(buildTaskCard(task));
     });
+    bindTaskDragForList(list);
     container.appendChild(list);
   });
 
@@ -1594,6 +1736,8 @@ function buildTaskCard(task) {
   const div = document.createElement('div');
   div.className = `task-card ${task.period}${task.done ? ' done' : ''}`;
   div.id = `task-${task.id}`;
+  div.draggable = true;
+  div.dataset.taskId = String(task.id);
 
   const catColors = { health: 'tag-health', work: 'tag-work', personal: 'tag-personal', mindset: 'tag-mindset' };
   const isRunning = timerTaskId === task.id;
@@ -1609,7 +1753,13 @@ function buildTaskCard(task) {
         <span class="task-time">${formatTime(task.time)}</span>
         ${task.duration ? `<span class="task-duration">· ${task.duration}m</span>` : ''}
         <span class="task-tag ${catColors[task.cat] || ''}">${task.cat}</span>
+        ${task.pinned ? '<span class="task-tag" style="background:rgba(247,212,106,.18);color:var(--accent4)">📌 pinned</span>' : ''}
       </div>
+    </div>
+    <button type="button" onclick="togglePinTask(${task.id}, event)" style="background:transparent;border:none;color:${task.pinned ? 'var(--accent4)' : 'var(--muted)'};font-size:16px;cursor:pointer;padding:0 2px" aria-label="Pin task">📌</button>
+    <div style="display:flex;flex-direction:column;gap:2px">
+      <button type="button" onclick="moveTaskByOffset(${task.id}, -1, event)" style="background:transparent;border:none;color:var(--muted);font-size:12px;cursor:pointer;line-height:1" aria-label="Move task up">▲</button>
+      <button type="button" onclick="moveTaskByOffset(${task.id}, 1, event)" style="background:transparent;border:none;color:var(--muted);font-size:12px;cursor:pointer;line-height:1" aria-label="Move task down">▼</button>
     </div>
     ${isRunning ? `<div class="timer-badge" id="timer-badge-${task.id}">▶ running</div>` : `<div class="timer-badge timer-badge-start">▶</div>`}
   `;
@@ -1665,8 +1815,14 @@ function toggleTask(id, e) {
 function checkAllDone() {
   const tasks = getTasksForToday();
   if (tasks.length && tasks.every(t => t.done)) {
+    if (lastConfettiDate !== today()) {
+      launchConfetti();
+      lastConfettiDate = today();
+    }
     toast('🎉 All tasks complete! Amazing day!');
     updateStreak();
+  } else {
+    lastConfettiDate = '';
   }
 }
 
@@ -1692,12 +1848,101 @@ function renderProgress() {
   const idx = pct === 100 ? 4 : pct >= 75 ? 3 : pct >= 50 ? 2 : pct > 0 ? 1 : 0;
   document.getElementById('progress-label').textContent = labels[idx];
   document.getElementById('progress-sub').textContent = subs[idx];
+  const taskCounterBadge = document.getElementById('task-counter-badge');
+  if (taskCounterBadge) taskCounterBadge.textContent = `${done}/${total}`;
 
   // Accent color based on progress
   const fill = document.getElementById('ring-fill');
   if (pct === 100) fill.style.stroke = 'var(--accent3)';
   else if (pct >= 75) fill.style.stroke = 'var(--accent4)';
   else fill.style.stroke = 'var(--accent)';
+}
+
+function inferPeriodFromTime(t) {
+  if (!t || !t.includes(':')) return 'morning';
+  const h = parseInt(t.split(':')[0], 10);
+  if (Number.isNaN(h)) return 'morning';
+  if (h < 12) return 'morning';
+  if (h < 17) return 'afternoon';
+  if (h < 21) return 'evening';
+  return 'night';
+}
+
+function togglePinTask(id, e) {
+  e && e.stopPropagation();
+  const task = state.tasks.find(t => t.id === id);
+  if (!task) return;
+  task.pinned = !task.pinned;
+  saveState();
+  renderTasks();
+  toast(task.pinned ? `📌 "${task.name}" pinned` : `↩ "${task.name}" unpinned`);
+}
+
+function bindTaskDragForList(listEl) {
+  let draggingEl = null;
+  listEl.querySelectorAll('.task-card').forEach(card => {
+    card.addEventListener('dragstart', () => {
+      draggingEl = card;
+      card.style.opacity = '0.4';
+    });
+    card.addEventListener('dragend', () => {
+      card.style.opacity = '';
+      draggingEl = null;
+      persistManualTaskOrder(listEl);
+    });
+    card.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      if (!draggingEl || draggingEl === card) return;
+      const rect = card.getBoundingClientRect();
+      const before = e.clientY < rect.top + rect.height / 2;
+      listEl.insertBefore(draggingEl, before ? card : card.nextSibling);
+    });
+  });
+}
+
+function moveTaskByOffset(taskId, offset, e) {
+  e && e.stopPropagation();
+  const task = state.tasks.find(t => t.id === taskId);
+  if (!task) return;
+  const peers = state.tasks
+    .filter(t => t.period === task.period && !!t.pinned === !!task.pinned)
+    .sort((a, b) => (a.manualOrder ?? Number.MAX_SAFE_INTEGER) - (b.manualOrder ?? Number.MAX_SAFE_INTEGER));
+  const idx = peers.findIndex(t => t.id === taskId);
+  if (idx < 0) return;
+  const j = idx + offset;
+  if (j < 0 || j >= peers.length) return;
+  const swap = peers[j];
+  const a = task.manualOrder ?? Number.MAX_SAFE_INTEGER;
+  const b = swap.manualOrder ?? Number.MAX_SAFE_INTEGER;
+  task.manualOrder = b;
+  swap.manualOrder = a;
+  saveState();
+  renderTasks();
+}
+
+function persistManualTaskOrder(listEl) {
+  const ids = Array.from(listEl.querySelectorAll('.task-card')).map(el => parseInt(el.dataset.taskId, 10));
+  ids.forEach((id, idx) => {
+    const task = state.tasks.find(t => t.id === id);
+    if (!task) return;
+    task.manualOrder = idx;
+  });
+  saveState();
+  renderTasks();
+}
+
+function launchConfetti() {
+  const container = document.createElement('div');
+  container.style.cssText = 'position:fixed;inset:0;pointer-events:none;z-index:1200;overflow:hidden';
+  const colors = ['#7c6af7', '#6af7c8', '#f7d46a', '#f7916a', '#4a6af7', '#f76a6a'];
+  for (let i = 0; i < 28; i++) {
+    const piece = document.createElement('div');
+    const size = 6 + Math.floor(Math.random() * 8);
+    piece.style.cssText = `position:absolute;top:${8 + Math.random() * 20}%;left:${Math.random() * 100}%;width:${size}px;height:${size}px;background:${colors[i % colors.length]};border-radius:2px;animation:confetti ${0.9 + Math.random() * 0.7}s ease-in-out ${Math.random() * 0.2}s 2;opacity:.95`;
+    container.appendChild(piece);
+  }
+  document.body.appendChild(container);
+  setTimeout(() => container.remove(), 2200);
 }
 
 // ═══════════════════════════════════════════════
@@ -1800,6 +2045,8 @@ function renderHabits() {
     const card = buildHabitCard(habit);
     grid.appendChild(card);
   });
+  renderHabitMonthlyCalendar();
+  renderHabitWeeklyTargetCard();
 }
 
 function buildHabitCard(habit) {
@@ -1912,10 +2159,11 @@ function renderStats() {
   const avgMood = Object.values(state.mood).map(m => ['😔','😐','🙂','😄','🤩'].indexOf(m)+1).filter(v=>v>0);
   const moodAvg = avgMood.length ? (avgMood.reduce((a,b)=>a+b,0)/avgMood.length).toFixed(1) : '–';
 
-  // 7-day mood trend — Mon to Sun order
+  // 7-day mood trend — respects week start setting
   const moodEmojis = ['😔','😐','🙂','😄','🤩'];
   const moodColors = ['#f76a6a','#f7916a','#f7d46a','#6af7c8','#7c6af7'];
-  const dayNames = ['Mo','Tu','We','Th','Fr','Sa','Su'];
+  const startsSunday = (state.settings && state.settings.weekStart) === 'sunday';
+  const dayNames = startsSunday ? ['Su','Mo','Tu','We','Th','Fr','Sa'] : ['Mo','Tu','We','Th','Fr','Sa','Su'];
   const moodBars = [];
 
   // Build last 7 days starting from most-recent Monday
@@ -1927,10 +2175,9 @@ function renderStats() {
     const d = new Date();
     d.setDate(d.getDate() - i);
     const ds = formatDateKeyLocal(d);
-    // Mon-first label: compute day index
     const dow = d.getDay();
-    const monFirstIdx = (dow + 6) % 7;
-    const label = dayNames[monFirstIdx];
+    const dayIdx = startsSunday ? dow : (dow + 6) % 7;
+    const label = dayNames[dayIdx];
     const moodVal = state.mood[ds] ? moodEmojis.indexOf(state.mood[ds]) + 1 : 0;
     const isToday = (i === 0);
     const h = moodVal > 0 ? Math.round(moodVal / 5 * 56) : 4;
@@ -1984,6 +2231,9 @@ function renderStats() {
       <div class="heatmap-wrap">${buildCompletionHeatmapHtml()}</div>
     </div>
   `;
+  renderMonthlySummaryCard();
+  renderPersonalBestsCard();
+  renderHabitStatsCard();
 }
 
 function completionRatioForDate(ds) {
@@ -2015,6 +2265,49 @@ function loadSettings() {
   applyDarkMode();
   updateCurrencySub();
   updateGoalSub();
+  updateDisplayNameSub();
+  updateWeekStartSub();
+  updateHabitWeeklyTargetLabel();
+}
+
+function openNameModal() {
+  const input = document.getElementById('display-name-input');
+  if (input) input.value = (state.settings && state.settings.displayName) || '';
+  openModal('name-modal');
+}
+
+function saveDisplayName() {
+  state.settings = state.settings || {};
+  const input = document.getElementById('display-name-input');
+  state.settings.displayName = (input ? input.value : '').trim();
+  saveState();
+  updateDisplayNameSub();
+  updateGreeting();
+  closeModal('name-modal');
+  toast('✅ Name saved');
+}
+
+function updateDisplayNameSub() {
+  const sub = document.getElementById('display-name-sub');
+  if (!sub) return;
+  const name = ((state.settings && state.settings.displayName) || '').trim();
+  sub.textContent = name ? `Current: ${name}` : 'Tap to set your name';
+}
+
+function toggleWeekStart() {
+  state.settings = state.settings || {};
+  state.settings.weekStart = (state.settings.weekStart === 'sunday') ? 'monday' : 'sunday';
+  saveState();
+  updateWeekStartSub();
+  renderStats();
+  toast(`🗓 Week starts on ${state.settings.weekStart === 'sunday' ? 'Sunday' : 'Monday'}`);
+}
+
+function updateWeekStartSub() {
+  const sub = document.getElementById('week-start-sub');
+  if (!sub) return;
+  const weekStart = (state.settings && state.settings.weekStart) === 'sunday' ? 'Sunday' : 'Monday';
+  sub.textContent = weekStart;
 }
 
 function toggleSetting(btn, key) {
@@ -2039,6 +2332,8 @@ function clearData() {
 // ═══════════════════════════════════════════════
 function openAddModal() {
   editingTaskId = null;
+  taskPeriodAutoSuggestEnabled = true;
+  taskPeriodWasManuallySet = false;
   document.getElementById('modal-title').textContent = 'Add Task';
   document.getElementById('task-name-input').value = '';
   document.getElementById('task-time-input').value = '07:00';
@@ -2056,6 +2351,8 @@ function openEditModal(id) {
   const task = state.tasks.find(t => t.id === id);
   if (!task) return;
   editingTaskId = id;
+  taskPeriodAutoSuggestEnabled = false;
+  taskPeriodWasManuallySet = true;
   document.getElementById('modal-title').textContent = 'Edit Task';
   document.getElementById('task-name-input').value = task.name;
   document.getElementById('task-time-input').value = task.time;
@@ -2087,6 +2384,8 @@ function saveTask() {
     repeat,
     repeatMeta,
     done: false,
+    pinned: false,
+    manualOrder: Number.MAX_SAFE_INTEGER,
   };
 
   if (editingTaskId) {
@@ -2094,12 +2393,16 @@ function saveTask() {
     const prev = state.tasks[idx];
     taskData.id = editingTaskId;
     taskData.done = prev.done;
+    taskData.pinned = !!prev.pinned;
+    taskData.manualOrder = typeof prev.manualOrder === 'number' ? prev.manualOrder : Number.MAX_SAFE_INTEGER;
     taskData.createdAt = prev.createdAt;
     state.tasks[idx] = taskData;
     toast('✏️ Task updated!');
   } else {
     taskData.id = state.nextTaskId++;
     taskData.createdAt = today();
+    const maxOrder = state.tasks.reduce((max, t) => Math.max(max, typeof t.manualOrder === 'number' ? t.manualOrder : -1), -1);
+    taskData.manualOrder = maxOrder + 1;
     state.tasks.push(taskData);
     toast('✅ Task added!');
   }
@@ -2217,7 +2520,8 @@ function closeModal(id) {
   document.body.style.position = '';
   document.body.style.top = '';
   document.body.style.width = '';
-  window.scrollTo(0, parseInt(scrollY || '0') * -1);
+  const parsed = parseInt(scrollY || '0', 10);
+  window.scrollTo(0, Number.isNaN(parsed) ? 0 : parsed * -1);
 }
 
 function selectEmoji(el) {
@@ -2343,17 +2647,19 @@ document.querySelectorAll('.modal-backdrop').forEach(backdrop => {
 //  NAVIGATION
 // ═══════════════════════════════════════════════
 function showPage(name, btn) {
+  const navOrder = ['today', 'habits', 'stats', 'money', 'settings'];
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
   document.getElementById('page-' + name).classList.add('active');
-  btn.classList.add('active');
+  const activeBtn = btn || document.querySelectorAll('.nav-btn')[navOrder.indexOf(name)];
+  if (activeBtn) activeBtn.classList.add('active');
   currentPage = name;
   document.getElementById('screen').scrollTop = 0;
 
   if (name === 'stats') renderStats();
   if (name === 'habits') { renderHabits(); renderMedals(); }
   if (name === 'money') { renderMoney(); applyMoneyWidgetLayout(); }
-  if (name === 'today') { applyTodayWidgetLayout(); }
+  if (name === 'today') { applyTodayWidgetLayout(); renderWeatherWidget(); }
 
   // Change FAB based on page
   const fab = document.getElementById('fab-btn');
@@ -2393,6 +2699,40 @@ function toast(msg, undoFn) {
   }, undoFn ? 5000 : 2500);
 }
 
+function openSearchModal() {
+  const input = document.getElementById('global-search-input');
+  if (input) {
+    input.value = globalSearchTerm;
+    setTimeout(() => input.focus(), 30);
+  }
+  renderGlobalSearchResults();
+  openModal('search-modal');
+}
+
+function renderGlobalSearchResults() {
+  const input = document.getElementById('global-search-input');
+  const q = ((input ? input.value : globalSearchTerm) || '').trim().toLowerCase();
+  globalSearchTerm = q;
+  const box = document.getElementById('global-search-results');
+  if (!box) return;
+  if (!q) {
+    box.innerHTML = '<div style="font-size:12px;color:var(--muted)">Type to search tasks, habits, and transactions.</div>';
+    return;
+  }
+  const taskMatches = (state.tasks || []).filter(t => [t.name, t.cat, t.time].join(' ').toLowerCase().includes(q)).slice(0, 6);
+  const habitMatches = (state.habits || []).filter(h => [h.name, h.freq].join(' ').toLowerCase().includes(q)).slice(0, 6);
+  const txnMatches = (state.transactions || []).filter(t => [t.desc, t.cat, t.note, t.date].join(' ').toLowerCase().includes(q)).slice(0, 10);
+  const rows = [];
+  taskMatches.forEach(t => rows.push(`<button type="button" style="text-align:left;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:10px;cursor:pointer" onclick="closeModal('search-modal');showPage('today', document.querySelectorAll('.nav-btn')[0]);openEditModal(${t.id})">📋 ${escapeHtml(t.name)} <span style="color:var(--muted);font-size:11px">(${escapeHtml(t.cat)})</span></button>`));
+  habitMatches.forEach(h => rows.push(`<button type="button" style="text-align:left;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:10px;cursor:pointer" onclick="closeModal('search-modal');showPage('habits', document.querySelectorAll('.nav-btn')[1])">🌱 ${escapeHtml(h.name)} <span style="color:var(--muted);font-size:11px">(${escapeHtml(h.freq)})</span></button>`));
+  txnMatches.forEach(t => rows.push(`<button type="button" style="text-align:left;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:10px;cursor:pointer" onclick="closeModal('search-modal');showPage('money', document.querySelectorAll('.nav-btn')[3]);openEditTxnById(${JSON.stringify(t.id)})">💸 ${escapeHtml(t.desc)} <span style="color:var(--muted);font-size:11px">(${escapeHtml(t.date)})</span></button>`));
+  box.innerHTML = rows.length ? rows.join('') : '<div style="font-size:12px;color:var(--muted)">No results found.</div>';
+}
+
+function openEditTxnById(id) {
+  openEditTxn(id);
+}
+
 // ═══════════════════════════════════════════════
 //  EXPENSE TRACKER
 // ═══════════════════════════════════════════════
@@ -2415,7 +2755,9 @@ let editingTxnId = null;
 
 function getTxnsForMonth(m, y) {
   return (state.transactions || []).filter(t => {
-    const d = new Date(t.date);
+    if (!t || !t.date) return false;
+    const d = new Date(t.date + 'T12:00:00');
+    if (Number.isNaN(d.getTime())) return false;
     return d.getMonth() === m && d.getFullYear() === y;
   });
 }
@@ -2436,6 +2778,7 @@ function getCurrencySymbol() {
 function fmt(n) { return getCurrencySymbol() + Math.abs(n).toFixed(2); }
 
 function renderMoney() {
+  autoPostRecurringBillsForMonth();
   const months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
   document.getElementById('money-month-label').textContent = `${months[moneyViewMonth]} ${moneyViewYear}`;
 
@@ -2461,8 +2804,10 @@ function renderMoney() {
   const chipWrap = document.getElementById('pocket-chip-wrap');
   if (budget > 0) {
     const over = remaining < 0;
+    const usagePct = budget > 0 ? Math.round((expense / budget) * 100) : 0;
+    const nearLimit = usagePct >= 80 && !over;
     chipWrap.innerHTML = `<div class="pocket-chip" onclick="openBudgetModal()" style="cursor:pointer;${over ? 'background:rgba(247,106,106,.12);border-color:rgba(247,106,106,.3)' : ''}">
-      <span style="${over ? 'color:var(--danger)' : ''}">${over ? '⚠️ Over by ' + fmt(Math.abs(remaining)) : '💳 In my pocket: ' + fmt(Math.max(0, remaining))}</span>
+      <span style="${over ? 'color:var(--danger)' : nearLimit ? 'color:var(--accent4)' : ''}">${over ? '⚠️ Over by ' + fmt(Math.abs(remaining)) : nearLimit ? '⚠️ ' + usagePct + '% used · Left ' + fmt(Math.max(0, remaining)) : '💳 In my pocket: ' + fmt(Math.max(0, remaining))}</span>
     </div>`;
   } else {
     chipWrap.innerHTML = `<div class="pocket-chip" onclick="openBudgetModal()" style="cursor:pointer">
@@ -2473,21 +2818,96 @@ function renderMoney() {
   if (budget > 0) {
     const pct = Math.min(100, Math.round(expense / budget * 100));
     document.getElementById('budget-fill').style.width = pct + '%';
-    document.getElementById('budget-fill').style.background = pct > 85 ? 'var(--danger)' : pct > 65 ? 'var(--accent4)' : 'var(--accent3)';
+    document.getElementById('budget-fill').style.background = pct >= 100 ? 'var(--danger)' : pct >= 80 ? 'var(--accent4)' : 'var(--accent3)';
     document.getElementById('budget-pct-label').textContent = pct + '%';
     document.getElementById('budget-spent-label').textContent = fmt(expense) + ' spent';
-    document.getElementById('budget-limit-label').textContent = 'of ' + fmt(budget) + ' budget';
+    document.getElementById('budget-limit-label').textContent = pct >= 80 && pct < 100 ? `of ${fmt(budget)} budget · Alert at 80%` : ('of ' + fmt(budget) + ' budget');
     document.getElementById('budget-bar-wrap').style.display = 'block';
   } else {
     document.getElementById('budget-bar-wrap').style.display = 'none';
   }
 
   renderIouSection();
+  updateRecurringModeSub();
   renderRecurringBillsSection();
   renderDonut(txns);
   renderTrendBars();
+  renderMonthComparisonCard();
+  renderIncomeTrendBars();
   renderSavingsCard();
   renderTxnList();
+}
+
+function renderMonthComparisonCard() {
+  const wrap = document.getElementById('mom-card-wrap');
+  if (!wrap) return;
+  const cur = getTxnsForMonth(moneyViewMonth, moneyViewYear);
+  const curIncome = cur.filter(t => t.type === 'income').reduce((s, t) => s + t.amount, 0);
+  const curExpense = cur.filter(t => t.type === 'expense').reduce((s, t) => s + t.amount, 0);
+  const prevMonth = moneyViewMonth === 0 ? 11 : moneyViewMonth - 1;
+  const prevYear = moneyViewMonth === 0 ? moneyViewYear - 1 : moneyViewYear;
+  const prev = getTxnsForMonth(prevMonth, prevYear);
+  const prevIncome = prev.filter(t => t.type === 'income').reduce((s, t) => s + t.amount, 0);
+  const prevExpense = prev.filter(t => t.type === 'expense').reduce((s, t) => s + t.amount, 0);
+  const expenseDelta = curExpense - prevExpense;
+  const incomeDelta = curIncome - prevIncome;
+  const expenseSign = expenseDelta > 0 ? '+' : '';
+  const incomeSign = incomeDelta > 0 ? '+' : '';
+  wrap.innerHTML = `
+    <h3>Month-over-month</h3>
+    <div style="font-size:12px;color:var(--muted);margin-top:6px">Compared with previous month</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px">
+      <div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:10px">
+        <div style="font-size:11px;color:var(--muted)">Expenses</div>
+        <div style="font-weight:700;color:${expenseDelta > 0 ? 'var(--danger)' : 'var(--accent3)'}">${expenseSign}${fmt(expenseDelta)}</div>
+      </div>
+      <div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:10px">
+        <div style="font-size:11px;color:var(--muted)">Income</div>
+        <div style="font-weight:700;color:${incomeDelta < 0 ? 'var(--danger)' : 'var(--accent3)'}">${incomeSign}${fmt(incomeDelta)}</div>
+      </div>
+    </div>
+  `;
+}
+
+function renderIncomeTrendBars() {
+  const bars = document.getElementById('income-trend-bars');
+  if (!bars) return;
+  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const data = [];
+  for (let i = 5; i >= 0; i--) {
+    const d = new Date(moneyViewYear, moneyViewMonth - i, 1);
+    const y = d.getFullYear();
+    const m = d.getMonth();
+    const txns = getTxnsForMonth(m, y);
+    const income = txns.filter(t => t.type === 'income').reduce((s, t) => s + t.amount, 0);
+    data.push({ label: months[m], income, isCurrent: i === 0 });
+  }
+  const max = Math.max(...data.map(d => d.income), 1);
+  bars.innerHTML = data.map(d => {
+    const h = Math.max(4, Math.round((d.income / max) * 56));
+    return `<div class="trend-bar-wrap" title="${d.label}: ${fmt(d.income)}">
+      <div class="trend-bar" style="height:${h}px;background:${d.isCurrent ? 'var(--accent3)' : 'var(--accent)'};opacity:${d.isCurrent ? 1 : 0.65}"></div>
+      <div class="trend-day">${d.label}</div>
+    </div>`;
+  }).join('');
+}
+
+function exportTransactionsCsv() {
+  const rows = [['id', 'date', 'type', 'category', 'amount', 'description', 'note']];
+  (state.transactions || []).forEach(t => {
+    rows.push([t.id, t.date, t.type, t.cat, t.amount, t.desc || '', t.note || '']);
+  });
+  const csv = rows.map(r => r.map(v => `"${String(v ?? '').replace(/"/g, '""')}"`).join(',')).join('\n');
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `dayflow-transactions-${today()}.csv`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+  toast('📤 CSV exported');
 }
 
 let donutShowAmount = false;
@@ -3312,7 +3732,7 @@ function applyTodayWidgetLayout() {
 function applyMoneyWidgetLayout() {
   const parent = document.getElementById('page-money');
   if (!parent) return;
-  const order = (state.settings && state.settings.moneyWidgetOrder) || ['month','summary','budget','iou','bills','donut','trend','savings','transactions'];
+  const order = (state.settings && state.settings.moneyWidgetOrder) || ['month','summary','budget','iou','bills','donut','trend','mom','incomeTrend','savings','transactions'];
   const hidden = (state.settings && state.settings.moneyWidgetHidden) || {};
   order.forEach(key => {
     const el = document.querySelector(`[data-money-widget="${key}"]`);
@@ -3323,8 +3743,8 @@ function applyMoneyWidgetLayout() {
 }
 
 function openTodayWidgetsModal() {
-  const keys = ['greeting','progress','mood','tasks','note'];
-  const labels = { greeting: 'Greeting & quote', progress: 'Progress ring', mood: 'Mood', tasks: 'Tasks list', note: 'Daily note' };
+  const keys = ['greeting','weather','progress','mood','tasks','note'];
+  const labels = { greeting: 'Greeting & quote', weather: 'Weather widget', progress: 'Progress ring', mood: 'Mood', tasks: 'Tasks list', note: 'Daily note' };
   if (!window.__twOrder || window.__twOrder.length !== keys.length) {
     window.__twOrder = [...((state.settings && state.settings.todayWidgetOrder) || keys)];
   }
@@ -3372,7 +3792,7 @@ function saveTodayWidgets() {
 }
 
 function openMoneyWidgetsModal() {
-  const keys = ['month','summary','budget','iou','bills','donut','trend','savings','transactions'];
+  const keys = ['month','summary','budget','iou','bills','donut','trend','mom','incomeTrend','savings','transactions'];
   const labels = {
     month: 'Month selector',
     summary: 'Balance summary',
@@ -3381,6 +3801,8 @@ function openMoneyWidgetsModal() {
     bills: 'Recurring bills',
     donut: 'Spending by category',
     trend: 'Monthly trend',
+    mom: 'Month-over-month',
+    incomeTrend: 'Income trend',
     savings: 'Savings goals',
     transactions: 'Transactions section',
   };
@@ -3595,6 +4017,220 @@ function renderRecurringBillsSection() {
   `).join('');
 }
 
+function toggleRecurringBillMode() {
+  state.settings = state.settings || {};
+  state.settings.recurringBillMode = state.settings.recurringBillMode === 'auto' ? 'manual' : 'auto';
+  saveState();
+  updateRecurringModeSub();
+  if (state.settings.recurringBillMode === 'auto') autoPostRecurringBillsForMonth(true);
+  renderMoney();
+  toast(`Recurring bills: ${state.settings.recurringBillMode === 'auto' ? 'Auto' : 'Manual'}`);
+}
+
+function updateRecurringModeSub() {
+  const sub = document.getElementById('recurring-mode-sub');
+  const btn = document.getElementById('recurring-mode-btn');
+  const isAuto = (state.settings && state.settings.recurringBillMode) === 'auto';
+  const mode = isAuto ? 'Auto' : 'Manual';
+  if (btn) btn.textContent = isAuto ? 'Switch to Manual' : 'Switch to Auto';
+  if (!sub) return;
+  sub.textContent = `Posting mode: ${mode}`;
+}
+
+function updateHabitWeeklyTargetLabel() {
+  const el = document.getElementById('habit-weekly-target-label');
+  if (!el) return;
+  const target = (state.settings && state.settings.habitWeeklyTarget) || 5;
+  el.textContent = `${target} / week`;
+}
+
+function adjustHabitWeeklyTarget(delta) {
+  state.settings = state.settings || {};
+  const cur = state.settings.habitWeeklyTarget || 5;
+  state.settings.habitWeeklyTarget = Math.max(1, Math.min(28, cur + delta));
+  saveState();
+  updateHabitWeeklyTargetLabel();
+  renderHabitWeeklyTargetCard();
+}
+
+function startOfWeekDate(baseDate) {
+  const startsSunday = (state.settings && state.settings.weekStart) === 'sunday';
+  const d = new Date(baseDate);
+  const dow = d.getDay();
+  const shift = startsSunday ? dow : (dow + 6) % 7;
+  d.setDate(d.getDate() - shift);
+  d.setHours(0, 0, 0, 0);
+  return d;
+}
+
+function renderHabitWeeklyTargetCard() {
+  const box = document.getElementById('habit-weekly-target-card');
+  if (!box) return;
+  const start = startOfWeekDate(new Date());
+  const end = new Date(start);
+  end.setDate(end.getDate() + 7);
+  const totalDone = (state.habits || []).reduce((sum, h) => {
+    const cnt = (h.history || []).filter(ds => {
+      const d = new Date(ds + 'T12:00:00');
+      return d >= start && d < end;
+    }).length;
+    return sum + cnt;
+  }, 0);
+  const target = (state.settings && state.settings.habitWeeklyTarget) || 5;
+  const pct = Math.min(100, Math.round((totalDone / target) * 100));
+  box.innerHTML = `
+    <div style="font-size:12px;color:var(--muted)">This week: <b>${totalDone}</b> completions</div>
+    <div class="budget-track" style="margin-top:8px"><div class="budget-fill" style="width:${pct}%;background:${pct >= 100 ? 'var(--accent3)' : 'var(--accent)'}"></div></div>
+    <div style="font-size:11px;color:var(--muted);margin-top:6px">${pct}% of weekly target (${target})</div>
+  `;
+}
+
+function renderHabitMonthlyCalendar() {
+  const wrap = document.getElementById('habit-calendar-wrap');
+  if (!wrap) return;
+  const now = new Date();
+  const y = now.getFullYear();
+  const m = now.getMonth();
+  const daysInMonth = new Date(y, m + 1, 0).getDate();
+  const firstDow = new Date(y, m, 1).getDay();
+  const startsSunday = (state.settings && state.settings.weekStart) === 'sunday';
+  const leading = startsSunday ? firstDow : (firstDow + 6) % 7;
+  const dayLabels = startsSunday ? ['Su','Mo','Tu','We','Th','Fr','Sa'] : ['Mo','Tu','We','Th','Fr','Sa','Su'];
+  const cellHtml = [];
+  for (let i = 0; i < leading; i++) cellHtml.push('<div></div>');
+  for (let day = 1; day <= daysInMonth; day++) {
+    const ds = `${y}-${String(m + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+    const done = (state.habits || []).reduce((s, h) => s + ((h.history || []).includes(ds) ? 1 : 0), 0);
+    const intensity = Math.min(4, done);
+    const bg = intensity === 0 ? 'var(--surface2)' : intensity === 1 ? 'rgba(124,106,247,.25)' : intensity === 2 ? 'rgba(124,106,247,.4)' : intensity === 3 ? 'rgba(124,106,247,.6)' : 'rgba(124,106,247,.85)';
+    cellHtml.push(`<div title="${ds}: ${done} completions" style="height:24px;border-radius:6px;background:${bg};display:flex;align-items:center;justify-content:center;font-size:10px;color:${intensity >= 3 ? '#fff' : 'var(--text)'}">${day}</div>`);
+  }
+  wrap.innerHTML = `
+    <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px;font-size:10px;color:var(--muted);margin-bottom:6px">${dayLabels.map(d => `<div style="text-align:center">${d}</div>`).join('')}</div>
+    <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px">${cellHtml.join('')}</div>
+  `;
+}
+
+function renderMonthlySummaryCard() {
+  const box = document.getElementById('monthly-summary-card');
+  if (!box) return;
+  const now = new Date();
+  const y = now.getFullYear();
+  const m = now.getMonth();
+  const monthTxns = getTxnsForMonth(m, y);
+  const expense = monthTxns.filter(t => t.type === 'expense').reduce((s, t) => s + t.amount, 0);
+  const income = monthTxns.filter(t => t.type === 'income').reduce((s, t) => s + t.amount, 0);
+  const completedThisMonth = Object.entries(state.completedDays || {}).filter(([ds]) => {
+    const d = new Date(ds + 'T12:00:00');
+    return d.getFullYear() === y && d.getMonth() === m;
+  }).length;
+  box.innerHTML = `
+    <h3>Monthly Summary</h3>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:8px">
+      <div style="background:var(--surface2);padding:10px;border-radius:10px"><div style="font-size:10px;color:var(--muted)">Income</div><div style="font-weight:700">${fmt(income)}</div></div>
+      <div style="background:var(--surface2);padding:10px;border-radius:10px"><div style="font-size:10px;color:var(--muted)">Spent</div><div style="font-weight:700">${fmt(expense)}</div></div>
+      <div style="background:var(--surface2);padding:10px;border-radius:10px"><div style="font-size:10px;color:var(--muted)">Active Days</div><div style="font-weight:700">${completedThisMonth}</div></div>
+    </div>
+  `;
+}
+
+function renderPersonalBestsCard() {
+  const box = document.getElementById('personal-bests-card');
+  if (!box) return;
+  const bestHabitStreak = Math.max(...(state.habits || []).map(h => h.longestStreak || 0), 0);
+  const bestDayTasks = Math.max(0, ...Object.values(state.completedDays || {}).map(v => (v || []).length));
+  const mostCompletedHabit = (state.habits || []).slice().sort((a, b) => (b.history || []).length - (a.history || []).length)[0];
+  box.innerHTML = `
+    <h3>Personal Bests</h3>
+    <div style="font-size:12px;margin-top:8px;line-height:1.7">
+      <div>🔥 Longest habit streak: <b>${bestHabitStreak}</b></div>
+      <div>✅ Most tasks done in one day: <b>${bestDayTasks}</b></div>
+      <div>🌱 Most completed habit: <b>${mostCompletedHabit ? escapeHtml(mostCompletedHabit.name) : '—'}</b></div>
+    </div>
+  `;
+}
+
+function renderHabitStatsCard() {
+  const box = document.getElementById('habit-stats-card');
+  if (!box) return;
+  const totalCompletions = (state.habits || []).reduce((s, h) => s + (h.history || []).length, 0);
+  const activeHabits = (state.habits || []).length;
+  const avgPerHabit = activeHabits ? (totalCompletions / activeHabits).toFixed(1) : '0';
+  box.innerHTML = `
+    <h3>Habit Stats</h3>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:8px">
+      <div style="background:var(--surface2);padding:10px;border-radius:10px"><div style="font-size:10px;color:var(--muted)">Completions</div><div style="font-weight:700">${totalCompletions}</div></div>
+      <div style="background:var(--surface2);padding:10px;border-radius:10px"><div style="font-size:10px;color:var(--muted)">Habits</div><div style="font-weight:700">${activeHabits}</div></div>
+      <div style="background:var(--surface2);padding:10px;border-radius:10px"><div style="font-size:10px;color:var(--muted)">Avg/Habit</div><div style="font-weight:700">${avgPerHabit}</div></div>
+    </div>
+  `;
+}
+
+function weatherCodeToText(code) {
+  const map = {
+    0: 'Clear', 1: 'Mostly clear', 2: 'Partly cloudy', 3: 'Cloudy',
+    45: 'Fog', 48: 'Rime fog', 51: 'Light drizzle', 53: 'Drizzle', 55: 'Heavy drizzle',
+    61: 'Light rain', 63: 'Rain', 65: 'Heavy rain', 71: 'Light snow', 73: 'Snow',
+    75: 'Heavy snow', 80: 'Rain showers', 95: 'Thunderstorm'
+  };
+  return map[code] || 'Weather';
+}
+
+async function refreshWeather(forceToast) {
+  const city = ((state.settings && state.settings.weatherCity) || 'Singapore').trim();
+  const card = document.getElementById('weather-card-wrap');
+  const now = Date.now();
+  if (!forceToast && weatherCache && weatherCache.city && weatherCache.city.toLowerCase() === city.toLowerCase() && weatherCache.fetchedAt && (now - weatherCache.fetchedAt) < WEATHER_CACHE_MS) {
+    renderWeatherWidget();
+    return;
+  }
+  if (card) card.innerHTML = '<div style="font-size:13px;color:var(--muted)">Refreshing weather...</div>';
+  try {
+    const geoRes = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(city)}&count=1`);
+    const geo = await geoRes.json();
+    const loc = geo && geo.results && geo.results[0];
+    if (!loc) throw new Error('City not found');
+    const weatherRes = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${loc.latitude}&longitude=${loc.longitude}&current=temperature_2m,weather_code,wind_speed_10m`);
+    const weather = await weatherRes.json();
+    weatherCache = { city: loc.name, country: loc.country || '', data: weather.current, fetchedAt: now };
+    renderWeatherWidget();
+    if (forceToast) toast('🌤 Weather updated');
+  } catch (e) {
+    if (card) card.innerHTML = `<div style="font-size:13px;color:var(--muted)">Unable to fetch weather for ${escapeHtml(city)}.</div>`;
+    if (forceToast) toast('⚠️ Weather unavailable');
+  }
+}
+
+function renderWeatherWidget() {
+  const card = document.getElementById('weather-card-wrap');
+  if (!card) return;
+  if (!weatherCache) {
+    card.innerHTML = `<div style="display:flex;gap:8px;align-items:center"><input type="text" id="weather-city-input" placeholder="City" value="${escapeHtml((state.settings && state.settings.weatherCity) || 'Singapore')}" style="flex:1"><button type="button" class="pill-btn-upcoming" onclick="saveWeatherCity()">Set city</button></div><div style="font-size:12px;color:var(--muted);margin-top:8px">Tap refresh to load current weather.</div>`;
+    return;
+  }
+  const c = weatherCache.data;
+  card.innerHTML = `
+    <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px">
+      <div>
+        <div style="font-size:13px;color:var(--muted)">${escapeHtml(weatherCache.city)}${weatherCache.country ? ', ' + escapeHtml(weatherCache.country) : ''}</div>
+        <div style="font-size:26px;font-weight:800;margin-top:2px">${Math.round(c.temperature_2m)}°C</div>
+        <div style="font-size:12px;color:var(--muted)">${weatherCodeToText(c.weather_code)} · Wind ${Math.round(c.wind_speed_10m)} km/h</div>
+      </div>
+      <button type="button" class="pill-btn-upcoming" onclick="weatherCache=null;renderWeatherWidget()">Change city</button>
+    </div>
+  `;
+}
+
+function saveWeatherCity() {
+  const input = document.getElementById('weather-city-input');
+  const city = (input ? input.value : '').trim();
+  if (!city) { toast('⚠️ Enter a city name'); return; }
+  state.settings = state.settings || {};
+  state.settings.weatherCity = city;
+  saveState();
+  refreshWeather(true);
+}
+
 function openRecurringBillModal(id) {
   editingBillId = id;
   if (id == null) {
@@ -3657,6 +4293,15 @@ function deleteRecurringBill(id) {
 }
 
 function postRecurringBillsForMonth() {
+  postRecurringBillsInternal(false);
+}
+
+function autoPostRecurringBillsForMonth(showToastOnPosted) {
+  if (!state.settings || state.settings.recurringBillMode !== 'auto') return;
+  postRecurringBillsInternal(!!showToastOnPosted, true);
+}
+
+function postRecurringBillsInternal(showToastOnPosted, isAutoMode) {
   const y = moneyViewYear;
   const m = moneyViewMonth;
   const lastDay = new Date(y, m + 1, 0).getDate();
@@ -3681,11 +4326,45 @@ function postRecurringBillsForMonth() {
     state.recurringPosted[key] = true;
     n++;
   });
-  if (!n) { toast('No new bills to post for this month'); return; }
+  if (!n) {
+    if (!isAutoMode) toast('No new bills to post for this month');
+    return;
+  }
   saveState();
-  renderMoney();
-  toast(`✅ Posted ${n} bill(s)`);
+  if (showToastOnPosted || !isAutoMode) toast(`✅ Posted ${n} bill(s)`);
+  if (!isAutoMode) renderMoney();
 }
+
+// ═══════════════════════════════════════════════
+//  TAB SWIPE NAVIGATION
+// ═══════════════════════════════════════════════
+(function initTabSwipeNavigation() {
+  const pages = ['today', 'habits', 'stats', 'money', 'settings'];
+  const screen = document.getElementById('screen');
+  if (!screen) return;
+  let sx = 0;
+  let sy = 0;
+  let swipeBlocked = false;
+  screen.addEventListener('touchstart', (e) => {
+    if (document.querySelector('.modal-backdrop.open')) return;
+    swipeBlocked = !!(e.target && e.target.closest && e.target.closest('.trend-bars-scroll, .filter-scroll, #income-trend-scroll, #txn-list'));
+    const t = e.touches[0];
+    sx = t.clientX;
+    sy = t.clientY;
+  }, { passive: true });
+  screen.addEventListener('touchend', (e) => {
+    if (document.querySelector('.modal-backdrop.open')) return;
+    if (swipeBlocked) return;
+    const t = e.changedTouches[0];
+    const dx = t.clientX - sx;
+    const dy = t.clientY - sy;
+    if (Math.abs(dx) < 60 || Math.abs(dx) < Math.abs(dy)) return;
+    const idx = pages.indexOf(currentPage);
+    if (idx < 0) return;
+    if (dx < 0 && idx < pages.length - 1) showPage(pages[idx + 1]);
+    if (dx > 0 && idx > 0) showPage(pages[idx - 1]);
+  }, { passive: true });
+})();
 
 // ═══════════════════════════════════════════════
 //  DRAGGABLE FAB
