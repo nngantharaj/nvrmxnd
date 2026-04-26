@@ -51,8 +51,13 @@
   /* ── Today ── */
   .greeting-block { padding: 52px 20px 0; }
   .greeting-block .date-label { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; }
-  .greeting-block h1 { font-family: 'Syne', sans-serif; font-size: 28px; font-weight: 800; margin-top: 2px; }
+  .greeting-block h1 { font-family: 'Syne', sans-serif; font-size: 25px; font-weight: 800; margin-top: 2px; }
   .greeting-block .quote { font-size: 13px; color: var(--muted); margin-top: 6px; font-style: italic; line-height: 1.5; border-left: 3px solid var(--accent); padding-left: 10px; }
+  .inline-weather-stack { display: flex; align-items: center; gap: 8px; font-style: normal; white-space: nowrap; }
+  .inline-weather-location { flex-shrink: 0; white-space: nowrap; line-height: 1.2; }
+  .inline-weather-location::after { content: ","; margin-left: 2px; }
+  .inline-weather-metrics { min-height: 1.2em; line-height: 1.2; display: inline-flex; align-items: center; touch-action: none; user-select: none; cursor: ns-resize; }
+  .inline-weather-metric { display: inline-block; line-height: 1.2; }
 
   /* Progress ring */
   .progress-card { margin: 16px 20px 0; background: linear-gradient(135deg, #1a1b2e 0%, #1e1b2e 100%); border: 1px solid var(--border); border-radius: 20px; padding: 20px; display: flex; align-items: center; gap: 20px; }
@@ -1266,6 +1271,7 @@ let taskPeriodWasManuallySet = false;
 let taskPeriodAutoSuggestEnabled = true;
 let lastConfettiDate = '';
 let weatherCache = null;
+let weatherMetricIndex = 0;
 const WEATHER_CACHE_MS = 15 * 60 * 1000;
 
 // ═══════════════════════════════════════════════
@@ -1320,7 +1326,7 @@ function migrateFeaturesState(s) {
   if (!s.settings.todayWidgetHidden || typeof s.settings.todayWidgetHidden !== 'object') s.settings.todayWidgetHidden = {};
   if (!s.settings.moneyWidgetHidden || typeof s.settings.moneyWidgetHidden !== 'object') s.settings.moneyWidgetHidden = {};
   if (!['manual', 'auto'].includes(s.settings.recurringBillMode)) s.settings.recurringBillMode = 'manual';
-  if (typeof s.settings.weatherCity !== 'string') s.settings.weatherCity = 'Singapore';
+  delete s.settings.weatherCity;
   if (Array.isArray(s.tasks)) {
     s.tasks.forEach(task => {
       if (typeof task.manualOrder !== 'number') task.manualOrder = Number.MAX_SAFE_INTEGER;
@@ -1354,7 +1360,6 @@ function getDefaultState() {
     settings: {
       reminders: true,
       recurringBillMode: 'manual',
-      weatherCity: 'Singapore',
       todayWidgetOrder: ['greeting','progress','mood','tasks','note'],
       todayWidgetHidden: {},
       moneyWidgetOrder: ['month','summary','budget','iou','bills','donut','trend','savings','transactions'],
@@ -1465,9 +1470,9 @@ function resetDailyTasksIfNeeded() {
 function updateGreeting() {
   const h = new Date().getHours();
   const el = document.getElementById('greeting-text');
-  if (h < 12) el.textContent = 'Good Morning ☀️';
-  else if (h < 17) el.textContent = 'Good Afternoon 🌤';
-  else if (h < 21) el.textContent = 'Good Evening 🌆';
+  if (h < 12) el.textContent = 'Good Morning 🌤️';
+  else if (h < 17) el.textContent = 'Good Afternoon ☀️';
+  else if (h < 21) el.textContent = 'Good Evening 🌇';
   else el.textContent = 'Good Night 🌙';
 
   const d = new Date();
@@ -3245,7 +3250,7 @@ function showDayDetail(dateStr) {
           </div>
         </div>`).join('');
   } else {
-    txnEl.innerHTML = `<div style="text-align:center;padding:16px;color:var(--muted);font-size:13px">No transactions on this day</div>`;
+    txnEl.innerHTML = '';
   }
 
   openModal('day-detail-modal');
@@ -3669,19 +3674,23 @@ function weatherCodeToText(code) {
 }
 
 async function refreshWeather(forceToast) {
-  const city = ((state.settings && state.settings.weatherCity) || 'Singapore').trim();
   const now = Date.now();
-  const sourceKey = `fallback:${city.toLowerCase()}`;
-  if (!forceToast && weatherCache && weatherCache.sourceKey === sourceKey && weatherCache.fetchedAt && (now - weatherCache.fetchedAt) < WEATHER_CACHE_MS) {
+  if (!forceToast && weatherCache && weatherCache.fetchedAt && (now - weatherCache.fetchedAt) < WEATHER_CACHE_MS) {
     renderWeatherWidget();
     return;
   }
   renderWeatherWidget('Detecting weather...');
   try {
-    const loc = await resolveWeatherLocation(city);
-    const weatherRes = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${loc.latitude}&longitude=${loc.longitude}&current=temperature_2m,weather_code,wind_speed_10m`);
+    const loc = await resolveWeatherLocation();
+    const [weatherRes, airRes] = await Promise.all([
+      fetch(`https://api.open-meteo.com/v1/forecast?latitude=${loc.latitude}&longitude=${loc.longitude}&current=temperature_2m,weather_code,uv_index`),
+      fetch(`https://air-quality-api.open-meteo.com/v1/air-quality?latitude=${loc.latitude}&longitude=${loc.longitude}&current=us_aqi`)
+    ]);
     const weather = await weatherRes.json();
-    weatherCache = { city: loc.name, country: loc.country || '', data: weather.current, fetchedAt: now, sourceKey: loc.sourceKey };
+    const air = await airRes.json();
+    const current = weather.current || {};
+    current.us_aqi = air && air.current ? air.current.us_aqi : null;
+    weatherCache = { city: loc.name, country: loc.country || '', data: current, fetchedAt: now, sourceKey: loc.sourceKey };
     renderWeatherWidget();
     if (forceToast) toast('🌤 Weather updated');
   } catch (e) {
@@ -3694,16 +3703,69 @@ function renderWeatherWidget(loadingText) {
   const weatherEl = document.getElementById('inline-weather');
   if (!weatherEl) return;
   if (loadingText) {
-    weatherEl.textContent = loadingText;
+    weatherEl.innerHTML = `<span class="inline-weather-stack"><span class="inline-weather-location">Location</span><span class="inline-weather-metrics"><span class="inline-weather-metric">${escapeHtml(loadingText)}</span></span></span>`;
     return;
   }
   if (!weatherCache) {
-    weatherEl.textContent = 'Weather unavailable';
+    weatherEl.innerHTML = `<span class="inline-weather-stack"><span class="inline-weather-location">Location</span><span class="inline-weather-metrics"><span class="inline-weather-metric">Weather unavailable</span></span></span>`;
     return;
   }
   const c = weatherCache.data;
-  const loc = weatherCache.city || 'My location';
-  weatherEl.textContent = `${loc} · ${weatherCodeToText(c.weather_code)} ${Math.round(c.temperature_2m)}°C`;
+  const loc = weatherCache.city || 'Current location';
+  const condition = weatherCodeToText(c.weather_code);
+  const temp = Number.isFinite(c.temperature_2m) ? `${Math.round(c.temperature_2m)}°C` : '--';
+  const uv = Number.isFinite(c.uv_index) ? Math.round(c.uv_index) : '--';
+  const aqi = Number.isFinite(c.us_aqi) ? Math.round(c.us_aqi) : '--';
+  const uvRef = '(0-2 low)';
+  const aqiRef = '(0-50 good)';
+  const metrics = [
+    `${escapeHtml(condition)} ${temp}`,
+    `UV ${uv} ${uvRef}`,
+    `AQI ${aqi} ${aqiRef}`
+  ];
+  weatherMetricIndex = ((weatherMetricIndex % metrics.length) + metrics.length) % metrics.length;
+  weatherEl.innerHTML = `<span class="inline-weather-stack"><span class="inline-weather-location">${escapeHtml(loc)}</span><span class="inline-weather-metrics" id="inline-weather-metrics"><span class="inline-weather-metric">${metrics[weatherMetricIndex]}</span></span></span>`;
+  bindInlineWeatherSwipe(metrics.length);
+}
+
+function bindInlineWeatherSwipe(totalMetrics) {
+  const el = document.getElementById('inline-weather-metrics');
+  if (!el || totalMetrics < 2) return;
+  let startY = null;
+  const threshold = 18;
+  const applyDelta = (delta) => {
+    if (Math.abs(delta) < threshold) return;
+    // Down swipe shows next card; up swipe shows previous.
+    weatherMetricIndex = delta > 0 ? (weatherMetricIndex + 1) % totalMetrics : (weatherMetricIndex - 1 + totalMetrics) % totalMetrics;
+    renderWeatherWidget();
+  };
+
+  el.onpointerdown = (e) => {
+    startY = e.clientY;
+  };
+  el.onpointerup = (e) => {
+    if (startY == null) return;
+    applyDelta(e.clientY - startY);
+    startY = null;
+  };
+  el.onpointercancel = () => { startY = null; };
+
+  // Fallback for browsers where pointer events are unreliable on touch.
+  el.ontouchstart = (e) => {
+    startY = e.touches && e.touches[0] ? e.touches[0].clientY : null;
+  };
+  el.ontouchend = (e) => {
+    if (startY == null) return;
+    const endY = e.changedTouches && e.changedTouches[0] ? e.changedTouches[0].clientY : startY;
+    applyDelta(endY - startY);
+    startY = null;
+  };
+
+  // Desktop fallback: mouse wheel cycles metrics.
+  el.onwheel = (e) => {
+    e.preventDefault();
+    applyDelta(e.deltaY);
+  };
 }
 
 function getDeviceLocation() {
@@ -3720,40 +3782,23 @@ function getDeviceLocation() {
   });
 }
 
-async function resolveWeatherLocation(city) {
+async function resolveWeatherLocation() {
+  const pos = await getDeviceLocation();
+  let placeName = `Current location (${pos.latitude.toFixed(2)}, ${pos.longitude.toFixed(2)})`;
+  let placeCountry = '';
   try {
-    const pos = await getDeviceLocation();
-    let placeName = 'My location';
-    let placeCountry = '';
-    try {
-      const revRes = await fetch(`https://geocoding-api.open-meteo.com/v1/reverse?latitude=${pos.latitude}&longitude=${pos.longitude}&count=1`);
-      const rev = await revRes.json();
-      const hit = rev && rev.results && rev.results[0];
-      if (hit && hit.name) {
-        placeName = hit.name;
-        placeCountry = hit.country || '';
-      }
-    } catch (_) {}
-    return {
-      latitude: pos.latitude,
-      longitude: pos.longitude,
-      name: placeName,
-      country: placeCountry,
-      sourceKey: `geo:${pos.latitude.toFixed(2)},${pos.longitude.toFixed(2)}`,
-    };
-  } catch (_) {
-    const geoRes = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(city)}&count=1`);
-    const geo = await geoRes.json();
-    const loc = geo && geo.results && geo.results[0];
-    if (!loc) throw new Error('City not found');
-    return {
-      latitude: loc.latitude,
-      longitude: loc.longitude,
-      name: loc.name,
-      country: loc.country || '',
-      sourceKey: `fallback:${city.toLowerCase()}`,
-    };
-  }
+    const revRes = await fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${pos.latitude}&longitude=${pos.longitude}&localityLanguage=en`);
+    const rev = await revRes.json();
+    placeName = rev.city || rev.locality || rev.principalSubdivision || placeName;
+    placeCountry = rev.countryName || '';
+  } catch (_) {}
+  return {
+    latitude: pos.latitude,
+    longitude: pos.longitude,
+    name: placeName,
+    country: placeCountry,
+    sourceKey: `geo:${pos.latitude.toFixed(2)},${pos.longitude.toFixed(2)}`,
+  };
 }
 
 function openRecurringBillModal(id) {
