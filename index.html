@@ -1144,12 +1144,12 @@
   </div>
   <div class="modal" style="max-height:85dvh">
     <div class="modal-handle"></div>
-    <h2>Search</h2>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+      <h2 style="margin-bottom:0">Search</h2>
+      <button type="button" aria-label="Close search" onclick="closeModal('search-modal')" style="background:var(--surface2);border:none;color:var(--muted);width:32px;height:32px;border-radius:50%;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center">×</button>
+    </div>
     <input type="text" id="global-search-input" class="search-input" placeholder="Search tasks, habits, transactions..." oninput="renderGlobalSearchResults()">
     <p id="search-modal-hint" class="search-modal-hint">Type to search tasks, habits, and transactions.</p>
-    <div class="modal-btns" style="margin-top:8px">
-      <button class="btn-ghost" onclick="closeModal('search-modal')">Close</button>
-    </div>
   </div>
 </div>
 
@@ -1275,7 +1275,6 @@ let currentPage = 'today';
 let taskPeriodWasManuallySet = false;
 let taskPeriodAutoSuggestEnabled = true;
 let lastConfettiDate = '';
-let globalSearchTerm = '';
 let weatherCache = null;
 const WEATHER_CACHE_MS = 15 * 60 * 1000;
 
@@ -2304,6 +2303,7 @@ function openModal(id) {
 }
 function closeModal(id) {
   document.getElementById(id).classList.remove('open');
+  if (id === 'search-modal') resetSearchModal();
   // Restore page scroll
   const scrollY = document.body.style.top;
   document.body.style.overflow = '';
@@ -2312,6 +2312,18 @@ function closeModal(id) {
   document.body.style.width = '';
   const parsed = parseInt(scrollY || '0', 10);
   window.scrollTo(0, Number.isNaN(parsed) ? 0 : parsed * -1);
+}
+
+function resetSearchModal() {
+  const input = document.getElementById('global-search-input');
+  if (input) input.value = '';
+  const box = document.getElementById('global-search-results');
+  if (box) {
+    box.classList.remove('show');
+    box.innerHTML = '';
+  }
+  const hint = document.getElementById('search-modal-hint');
+  if (hint) hint.style.display = '';
 }
 
 function selectEmoji(el) {
@@ -2491,18 +2503,15 @@ function toast(msg, undoFn) {
 
 function openSearchModal() {
   const input = document.getElementById('global-search-input');
-  if (input) {
-    input.value = globalSearchTerm;
-    setTimeout(() => input.focus(), 30);
-  }
+  resetSearchModal();
   renderGlobalSearchResults();
   openModal('search-modal');
+  if (input) setTimeout(() => input.focus(), 30);
 }
 
 function renderGlobalSearchResults() {
   const input = document.getElementById('global-search-input');
-  const q = ((input ? input.value : globalSearchTerm) || '').trim().toLowerCase();
-  globalSearchTerm = q;
+  const q = ((input ? input.value : '') || '').trim().toLowerCase();
   const box = document.getElementById('global-search-results');
   const hint = document.getElementById('search-modal-hint');
   if (!box) return;
