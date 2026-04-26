@@ -485,16 +485,6 @@
         <h1 id="greeting-text">Good Morning ☀️</h1>
         <div class="quote quote-anim" id="daily-quote"></div>
       </div>
-
-      <div data-today-widget="weather" class="today-widget">
-      <div class="section-label with-action">
-        <div style="display:flex;align-items:center;gap:8px"><div class="dot" style="background:var(--accent3)"></div>Weather</div>
-        <button type="button" class="pill-btn-upcoming" onclick="refreshWeather(true)">Refresh</button>
-      </div>
-      <div class="donut-card" id="weather-card-wrap">
-        <div style="font-size:13px;color:var(--muted)">Loading weather...</div>
-      </div>
-      </div>
       </div>
 
       <!-- Progress Ring -->
@@ -1278,19 +1268,6 @@ let lastConfettiDate = '';
 let weatherCache = null;
 const WEATHER_CACHE_MS = 15 * 60 * 1000;
 
-const quotes = [
-  "Small steps every day lead to big results.",
-  "Discipline is choosing between what you want now and what you want most.",
-  "You don't rise to the level of your goals, you fall to the level of your systems.",
-  "The secret is to get started.",
-  "Motivation gets you going. Habit keeps you there.",
-  "Your daily routine is your life in miniature.",
-  "Do something today your future self will thank you for.",
-  "Consistency beats intensity every time.",
-  "One day at a time, one habit at a time.",
-  "Progress, not perfection."
-];
-
 // ═══════════════════════════════════════════════
 //  STORAGE
 // ═══════════════════════════════════════════════
@@ -1326,7 +1303,7 @@ function migrateFeaturesState(s) {
   if (s.nextBillId == null) s.nextBillId = 1;
   if (!s.recurringPosted || typeof s.recurringPosted !== 'object') s.recurringPosted = {};
   s.settings = s.settings || {};
-  const todayWidgetKeys = ['greeting','weather','progress','mood','tasks','note'];
+  const todayWidgetKeys = ['greeting','progress','mood','tasks','note'];
   const moneyWidgetKeys = ['month','summary','budget','iou','bills','donut','trend','savings','transactions'];
   if (!s.settings.todayWidgetOrder) {
     s.settings.todayWidgetOrder = [...todayWidgetKeys];
@@ -1378,7 +1355,7 @@ function getDefaultState() {
       reminders: true,
       recurringBillMode: 'manual',
       weatherCity: 'Singapore',
-      todayWidgetOrder: ['greeting','weather','progress','mood','tasks','note'],
+      todayWidgetOrder: ['greeting','progress','mood','tasks','note'],
       todayWidgetHidden: {},
       moneyWidgetOrder: ['month','summary','budget','iou','bills','donut','trend','savings','transactions'],
       moneyWidgetHidden: {},
@@ -1500,8 +1477,9 @@ function updateGreeting() {
 }
 
 function updateQuote() {
-  const idx = new Date().getDay();
-  document.getElementById('daily-quote').textContent = quotes[idx % quotes.length];
+  const quoteEl = document.getElementById('daily-quote');
+  if (!quoteEl) return;
+  quoteEl.innerHTML = '<span id="inline-weather">Loading weather...</span>';
 }
 
 // ═══════════════════════════════════════════════
@@ -3429,8 +3407,8 @@ function applyMoneyWidgetLayout() {
 }
 
 function openTodayWidgetsModal() {
-  const keys = ['greeting','weather','progress','mood','tasks','note'];
-  const labels = { greeting: 'Greeting & quote', weather: 'Weather widget', progress: 'Progress ring', mood: 'Mood', tasks: 'Tasks list', note: 'Daily note' };
+  const keys = ['greeting','progress','mood','tasks','note'];
+  const labels = { greeting: 'Greeting, quote & weather', progress: 'Progress ring', mood: 'Mood', tasks: 'Tasks list', note: 'Daily note' };
   if (!window.__twOrder || window.__twOrder.length !== keys.length) {
     window.__twOrder = [...((state.settings && state.settings.todayWidgetOrder) || keys)];
   }
@@ -3692,57 +3670,90 @@ function weatherCodeToText(code) {
 
 async function refreshWeather(forceToast) {
   const city = ((state.settings && state.settings.weatherCity) || 'Singapore').trim();
-  const card = document.getElementById('weather-card-wrap');
   const now = Date.now();
-  if (!forceToast && weatherCache && weatherCache.city && weatherCache.city.toLowerCase() === city.toLowerCase() && weatherCache.fetchedAt && (now - weatherCache.fetchedAt) < WEATHER_CACHE_MS) {
+  const sourceKey = `fallback:${city.toLowerCase()}`;
+  if (!forceToast && weatherCache && weatherCache.sourceKey === sourceKey && weatherCache.fetchedAt && (now - weatherCache.fetchedAt) < WEATHER_CACHE_MS) {
     renderWeatherWidget();
     return;
   }
-  if (card) card.innerHTML = '<div style="font-size:13px;color:var(--muted)">Refreshing weather...</div>';
+  renderWeatherWidget('Detecting weather...');
   try {
-    const geoRes = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(city)}&count=1`);
-    const geo = await geoRes.json();
-    const loc = geo && geo.results && geo.results[0];
-    if (!loc) throw new Error('City not found');
+    const loc = await resolveWeatherLocation(city);
     const weatherRes = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${loc.latitude}&longitude=${loc.longitude}&current=temperature_2m,weather_code,wind_speed_10m`);
     const weather = await weatherRes.json();
-    weatherCache = { city: loc.name, country: loc.country || '', data: weather.current, fetchedAt: now };
+    weatherCache = { city: loc.name, country: loc.country || '', data: weather.current, fetchedAt: now, sourceKey: loc.sourceKey };
     renderWeatherWidget();
     if (forceToast) toast('🌤 Weather updated');
   } catch (e) {
-    if (card) card.innerHTML = `<div style="font-size:13px;color:var(--muted)">Unable to fetch weather for ${escapeHtml(city)}.</div>`;
+    renderWeatherWidget('Weather unavailable');
     if (forceToast) toast('⚠️ Weather unavailable');
   }
 }
 
-function renderWeatherWidget() {
-  const card = document.getElementById('weather-card-wrap');
-  if (!card) return;
+function renderWeatherWidget(loadingText) {
+  const weatherEl = document.getElementById('inline-weather');
+  if (!weatherEl) return;
+  if (loadingText) {
+    weatherEl.textContent = loadingText;
+    return;
+  }
   if (!weatherCache) {
-    card.innerHTML = `<div style="display:flex;gap:8px;align-items:center"><input type="text" id="weather-city-input" placeholder="City" value="${escapeHtml((state.settings && state.settings.weatherCity) || 'Singapore')}" style="flex:1"><button type="button" class="pill-btn-upcoming" onclick="saveWeatherCity()">Set city</button></div><div style="font-size:12px;color:var(--muted);margin-top:8px">Tap refresh to load current weather.</div>`;
+    weatherEl.textContent = 'Weather unavailable';
     return;
   }
   const c = weatherCache.data;
-  card.innerHTML = `
-    <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px">
-      <div>
-        <div style="font-size:13px;color:var(--muted)">${escapeHtml(weatherCache.city)}${weatherCache.country ? ', ' + escapeHtml(weatherCache.country) : ''}</div>
-        <div style="font-size:26px;font-weight:800;margin-top:2px">${Math.round(c.temperature_2m)}°C</div>
-        <div style="font-size:12px;color:var(--muted)">${weatherCodeToText(c.weather_code)} · Wind ${Math.round(c.wind_speed_10m)} km/h</div>
-      </div>
-      <button type="button" class="pill-btn-upcoming" onclick="weatherCache=null;renderWeatherWidget()">Change city</button>
-    </div>
-  `;
+  const loc = weatherCache.city || 'My location';
+  weatherEl.textContent = `${loc} · ${weatherCodeToText(c.weather_code)} ${Math.round(c.temperature_2m)}°C`;
 }
 
-function saveWeatherCity() {
-  const input = document.getElementById('weather-city-input');
-  const city = (input ? input.value : '').trim();
-  if (!city) { toast('⚠️ Enter a city name'); return; }
-  state.settings = state.settings || {};
-  state.settings.weatherCity = city;
-  saveState();
-  refreshWeather(true);
+function getDeviceLocation() {
+  return new Promise((resolve, reject) => {
+    if (!navigator.geolocation) {
+      reject(new Error('Geolocation unavailable'));
+      return;
+    }
+    navigator.geolocation.getCurrentPosition(
+      p => resolve({ latitude: p.coords.latitude, longitude: p.coords.longitude }),
+      err => reject(err),
+      { enableHighAccuracy: false, timeout: 8000, maximumAge: 10 * 60 * 1000 }
+    );
+  });
+}
+
+async function resolveWeatherLocation(city) {
+  try {
+    const pos = await getDeviceLocation();
+    let placeName = 'My location';
+    let placeCountry = '';
+    try {
+      const revRes = await fetch(`https://geocoding-api.open-meteo.com/v1/reverse?latitude=${pos.latitude}&longitude=${pos.longitude}&count=1`);
+      const rev = await revRes.json();
+      const hit = rev && rev.results && rev.results[0];
+      if (hit && hit.name) {
+        placeName = hit.name;
+        placeCountry = hit.country || '';
+      }
+    } catch (_) {}
+    return {
+      latitude: pos.latitude,
+      longitude: pos.longitude,
+      name: placeName,
+      country: placeCountry,
+      sourceKey: `geo:${pos.latitude.toFixed(2)},${pos.longitude.toFixed(2)}`,
+    };
+  } catch (_) {
+    const geoRes = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(city)}&count=1`);
+    const geo = await geoRes.json();
+    const loc = geo && geo.results && geo.results[0];
+    if (!loc) throw new Error('City not found');
+    return {
+      latitude: loc.latitude,
+      longitude: loc.longitude,
+      name: loc.name,
+      country: loc.country || '',
+      sourceKey: `fallback:${city.toLowerCase()}`,
+    };
+  }
 }
 
 function openRecurringBillModal(id) {
